@@ -39,4 +39,28 @@ export const projectService = {
     }
     return useDemoStore.getState().rooms.filter((r) => r.project_id === projectId);
   },
+
+  async createProject(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([project])
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Project;
+    }
+    return useDemoStore.getState().addProject(project);
+  },
+
+  async updateProject(id: string, updates: Partial<Project>): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    }
+    useDemoStore.getState().updateProject(id, updates);
+  },
 };

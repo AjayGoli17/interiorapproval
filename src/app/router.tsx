@@ -11,6 +11,7 @@ import { DemoLandingPage } from '@/features/demo/DemoLandingPage';
 // Admin Panel (8 screens)
 import { AdminDashboardPage } from '@/features/admin/pages/AdminDashboardPage';
 import { AdminProjectsPage } from '@/features/admin/pages/AdminProjectsPage';
+import { AdminProjectDetailsPage } from '@/features/admin/pages/AdminProjectDetailsPage';
 import { AdminClientsPage } from '@/features/admin/pages/AdminClientsPage';
 import { AdminTeamPage } from '@/features/admin/pages/AdminTeamPage';
 import { AdminFinancePage } from '@/features/admin/pages/AdminFinancePage';
@@ -71,6 +72,10 @@ export const router = createBrowserRouter([
       {
         path: 'projects',
         element: <AdminProjectsPage />,
+      },
+      {
+        path: 'projects/:projectId',
+        element: <AdminProjectDetailsPage />,
       },
       {
         path: 'clients',

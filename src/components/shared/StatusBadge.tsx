@@ -9,7 +9,8 @@ export type StatusCategory =
   | 'delivery'
   | 'payment'
   | 'priority'
-  | 'issue';
+  | 'issue'
+  | 'team';
 
 interface StatusBadgeProps {
   status: string;
@@ -20,7 +21,7 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, category = 'approval', className }: StatusBadgeProps) {
   const normalized = status.toLowerCase();
 
-  // Muted architectural styling maps
+  // Success / Completed / Positive statuses
   if (
     normalized === 'approved' ||
     normalized === 'client_approved' ||
@@ -29,8 +30,12 @@ export function StatusBadge({ status, category = 'approval', className }: Status
     normalized === 'payment_received' ||
     normalized === 'paid' ||
     normalized === 'received' ||
+    normalized === 'delivered' ||
+    normalized === 'installed' ||
+    normalized === 'implemented' ||
     normalized === 'resolved' ||
-    normalized === 'verified_closed'
+    normalized === 'verified_closed' ||
+    normalized === 'available'
   ) {
     return (
       <Badge
@@ -39,26 +44,36 @@ export function StatusBadge({ status, category = 'approval', className }: Status
           className
         )}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-[#2A5C45] mr-1.5 inline-block" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#2A5C45] mr-1.5 inline-block shrink-0" />
         {status.replace(/_/g, ' ')}
       </Badge>
     );
   }
 
+  // Pending / In-progress / Neutral-Active statuses
   if (
     normalized === 'pending' ||
     normalized === 'under_review' ||
+    normalized === 'reviewed' ||
+    normalized === 'quoted' ||
+    normalized === 'requested' ||
+    normalized === 'submitted' ||
     normalized === 'in_progress' ||
     normalized === 'in_design' ||
+    normalized === 'design_phase' ||
     normalized === 'client_review' ||
     normalized === 'in_execution' ||
+    normalized === 'execution' ||
     normalized === 'invoice_raised' ||
+    normalized === 'partially_paid' ||
     normalized === 'investigating' ||
     normalized === 'action_assigned' ||
     normalized === 'ordered' ||
     normalized === 'po_issued' ||
     normalized === 'in_transit' ||
-    normalized === 'medium'
+    normalized === 'dispatched' ||
+    normalized === 'medium' ||
+    normalized === 'busy'
   ) {
     return (
       <Badge
@@ -67,20 +82,23 @@ export function StatusBadge({ status, category = 'approval', className }: Status
           className
         )}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 inline-block" />
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 inline-block shrink-0" />
         {status.replace(/_/g, ' ')}
       </Badge>
     );
   }
 
+  // Destructive / Warning / Error statuses
   if (
     normalized === 'rejected' ||
     normalized === 'revision_requested' ||
+    normalized === 'cancelled' ||
     normalized === 'blocked' ||
     normalized === 'delayed' ||
     normalized === 'overdue' ||
     normalized === 'critical' ||
-    normalized === 'high'
+    normalized === 'high' ||
+    normalized === 'on_leave'
   ) {
     return (
       <Badge
@@ -89,19 +107,19 @@ export function StatusBadge({ status, category = 'approval', className }: Status
           className
         )}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5 inline-block" />
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5 inline-block shrink-0" />
         {status.replace(/_/g, ' ')}
       </Badge>
     );
   }
 
-  // Neutral / default (draft, scheduled, todo, low, lead)
+  // Neutral / default (draft, scheduled, todo, low, lead, on_hold)
   return (
     <Badge
       variant="secondary"
-      className={cn('text-stone-600 font-medium capitalize', className)}
+      className={cn('text-stone-600 font-medium capitalize bg-stone-100 border-stone-200', className)}
     >
-      <span className="w-1.5 h-1.5 rounded-full bg-stone-400 mr-1.5 inline-block" />
+      <span className="w-1.5 h-1.5 rounded-full bg-stone-400 mr-1.5 inline-block shrink-0" />
       {status.replace(/_/g, ' ')}
     </Badge>
   );

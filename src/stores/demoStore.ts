@@ -1,6 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import {
   UserProfile,
+  Client,
   Project,
   Room,
   DesignVersion,
@@ -15,9 +17,10 @@ import {
   PaymentMilestone,
   Notification,
   UserRole,
+  StudioSettings,
 } from '@/types';
 
-// Demo Identies
+// Demo Identies for Quick-Switcher
 export const DEMO_USERS: Record<UserRole, UserProfile> = {
   admin: {
     id: '11111111-1111-4111-8111-111111111111',
@@ -27,6 +30,8 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
     phone: '+91 98490 12345',
     avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
     company_name: 'StudioFlow Interiors',
+    specialization: 'Principal Architect & Studio Director',
+    status: 'available',
   },
   designer: {
     id: '22222222-2222-4222-8222-222222222222',
@@ -36,15 +41,19 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
     phone: '+91 98490 23456',
     avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
     company_name: 'StudioFlow Interiors',
+    specialization: 'Senior Interior Designer & Millwork Lead',
+    status: 'busy',
   },
   site_manager: {
-    id: '22222222-2222-4222-8222-222222222222',
-    email: 'arjun.mehta@studioflow.design',
-    full_name: 'Arjun Mehta (Site Lead)',
+    id: '44444444-4444-4444-8444-444444444444',
+    email: 'suresh.rao@studioflow.design',
+    full_name: 'Suresh Rao',
     role: 'site_manager',
-    phone: '+91 98490 23456',
-    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    phone: '+91 98490 44556',
+    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
     company_name: 'StudioFlow Interiors',
+    specialization: 'Senior Site Execution Engineer (Civil & MEP)',
+    status: 'busy',
   },
   client: {
     id: '33333333-3333-4333-8333-333333333333',
@@ -57,17 +66,111 @@ export const DEMO_USERS: Record<UserRole, UserProfile> = {
   },
 };
 
-// Initial Seed Dataset for Rahul Sharma — 3BHK Apartment
-const SEED_PROJECT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+export const SEED_PROJECT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+export const SEED_CLIENT_ID = '33333333-3333-4333-8333-333333333333';
+
+const initialTeamMembers: UserProfile[] = [
+  {
+    id: '11111111-1111-4111-8111-111111111111',
+    email: 'priya.nair@studioflow.design',
+    full_name: 'Priya Nair',
+    role: 'admin',
+    phone: '+91 98490 12345',
+    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+    company_name: 'StudioFlow Interiors',
+    specialization: 'Principal Architect & Studio Director',
+    status: 'available',
+    assigned_project_ids: [SEED_PROJECT_ID, 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb', 'aaaaaaaa-cccc-4aaa-8aaa-cccccccccccc'],
+    created_at: '2023-08-01T09:00:00Z',
+  },
+  {
+    id: '22222222-2222-4222-8222-222222222222',
+    email: 'arjun.mehta@studioflow.design',
+    full_name: 'Arjun Mehta',
+    role: 'designer',
+    phone: '+91 98490 23456',
+    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    company_name: 'StudioFlow Interiors',
+    specialization: 'Senior Interior Designer & Millwork Lead',
+    status: 'busy',
+    assigned_project_ids: [SEED_PROJECT_ID, 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb'],
+    created_at: '2023-09-15T10:00:00Z',
+  },
+  {
+    id: '55555555-5555-4555-8555-555555555555',
+    email: 'kavita.sundaram@studioflow.design',
+    full_name: 'Kavita Sundaram',
+    role: 'designer',
+    phone: '+91 98490 67890',
+    avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
+    company_name: 'StudioFlow Interiors',
+    specialization: '3D Visualizer & FF&E Specialist',
+    status: 'available',
+    assigned_project_ids: ['aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb', 'aaaaaaaa-cccc-4aaa-8aaa-cccccccccccc'],
+    created_at: '2023-11-10T11:00:00Z',
+  },
+  {
+    id: '44444444-4444-4444-8444-444444444444',
+    email: 'suresh.rao@studioflow.design',
+    full_name: 'Suresh Rao',
+    role: 'site_manager',
+    phone: '+91 98490 44556',
+    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    company_name: 'StudioFlow Interiors',
+    specialization: 'Senior Site Execution Engineer (Civil & MEP)',
+    status: 'busy',
+    assigned_project_ids: [SEED_PROJECT_ID, 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb'],
+    created_at: '2023-10-01T08:30:00Z',
+  },
+];
+
+const initialClients: Client[] = [
+  {
+    id: SEED_CLIENT_ID,
+    full_name: 'Rahul Sharma',
+    email: 'rahul.sharma@gmail.com',
+    phone: '+91 98490 34567',
+    property_address: 'Flat 1204, Tower B, Aparna Sarovar Grande, Nallagandla',
+    city: 'Hyderabad',
+    project_id: SEED_PROJECT_ID,
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+    notes: 'Premium 3BHK turnkey interior with Italian marble and fluted oak veneer highlights.',
+    created_at: '2024-01-08T10:00:00Z',
+  },
+  {
+    id: '33333333-bbbb-4333-8333-bbbbbbbbbbbb',
+    full_name: 'Ananya Reddy',
+    email: 'ananya.reddy@gmail.com',
+    phone: '+91 98490 99887',
+    property_address: 'Villa 42, Palm Meadows, Gachibowli',
+    city: 'Hyderabad',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+    notes: '4BHK Duplex Villa with double-height chandelier foyer and private terrace lounge.',
+    created_at: '2024-01-22T14:30:00Z',
+  },
+  {
+    id: '33333333-cccc-4333-8333-cccccccccccc',
+    full_name: 'Vikramaditya & Sneha Varma',
+    email: 'vikram.varma@techventures.io',
+    phone: '+91 99890 55443',
+    property_address: 'Penthouse 2101, Jayabheri The Peak, Financial District',
+    city: 'Hyderabad',
+    project_id: 'aaaaaaaa-cccc-4aaa-8aaa-cccccccccccc',
+    avatar_url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+    notes: 'Luxury penthouse with automated home cinema, imported quartz kitchen island.',
+    created_at: '2024-02-05T16:00:00Z',
+  },
+];
 
 const initialProjects: Project[] = [
   {
     id: SEED_PROJECT_ID,
     project_code: 'PRJ-HYD-2401',
     title: 'Rahul Sharma — 3BHK Apartment',
-    client_id: '33333333-3333-4333-8333-333333333333',
+    client_id: SEED_CLIENT_ID,
     lead_designer_id: '22222222-2222-4222-8222-222222222222',
-    site_manager_id: '22222222-2222-4222-8222-222222222222',
+    site_manager_id: '44444444-4444-4444-8444-444444444444',
     location: 'Flat 1204, Tower B, Aparna Sarovar Grande, Nallagandla',
     city: 'Hyderabad',
     property_type: '3BHK Apartment',
@@ -79,14 +182,15 @@ const initialProjects: Project[] = [
     progress_percentage: 45,
     notes:
       'Turnkey interior transformation with bespoke oak veneer cabinetry, quartz countertops, and concealed architectural warm lighting.',
+    created_at: '2024-01-10T10:00:00Z',
   },
   {
     id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
     project_code: 'PRJ-HYD-2402',
     title: 'Ananya Reddy — 4BHK Villa',
-    client_id: 'client-2',
-    lead_designer_id: '22222222-2222-4222-8222-222222222222',
-    site_manager_id: '22222222-2222-4222-8222-222222222222',
+    client_id: '33333333-bbbb-4333-8333-bbbbbbbbbbbb',
+    lead_designer_id: '55555555-5555-4555-8555-555555555555',
+    site_manager_id: '44444444-4444-4444-8444-444444444444',
     location: 'Villa 42, Palm Meadows, Gachibowli',
     city: 'Hyderabad',
     property_type: '4BHK Duplex Villa',
@@ -97,6 +201,26 @@ const initialProjects: Project[] = [
     status: 'design_phase',
     progress_percentage: 20,
     notes: 'Contemporary minimalist villa with Italian marble and double-height living foyer.',
+    created_at: '2024-01-25T11:30:00Z',
+  },
+  {
+    id: 'aaaaaaaa-cccc-4aaa-8aaa-cccccccccccc',
+    project_code: 'PRJ-HYD-2403',
+    title: 'Vikramaditya Varma — Penthouse',
+    client_id: '33333333-cccc-4333-8333-cccccccccccc',
+    lead_designer_id: '22222222-2222-4222-8222-222222222222',
+    site_manager_id: '44444444-4444-4444-8444-444444444444',
+    location: 'Penthouse 2101, Jayabheri The Peak, Financial District',
+    city: 'Hyderabad',
+    property_type: 'Penthouse',
+    carpet_area_sqft: 4100,
+    total_budget: 3500000,
+    estimated_start_date: '2024-03-01',
+    target_handover_date: '2024-07-31',
+    status: 'lead',
+    progress_percentage: 10,
+    notes: 'Turnkey luxury penthouse, smart lighting, automated acoustic wall panelling.',
+    created_at: '2024-02-06T15:00:00Z',
   },
 ];
 
@@ -145,6 +269,25 @@ const initialRooms: Room[] = [
     dimensions: '13 ft x 11 ft',
     area_sqft: 143,
     status: 'pending',
+  },
+  // Rooms for Project 2 (Villa)
+  {
+    id: 'bbbbbbbb-0010-4bbb-8bbb-bbbbbbbbbbbb',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    name: 'Foyer & Formal Living',
+    floor: 'Ground Floor',
+    dimensions: '28 ft x 20 ft',
+    area_sqft: 560,
+    status: 'in_design',
+  },
+  {
+    id: 'bbbbbbbb-0011-4bbb-8bbb-bbbbbbbbbbbb',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    name: 'Open Chef Kitchen',
+    floor: 'Ground Floor',
+    dimensions: '18 ft x 14 ft',
+    area_sqft: 252,
+    status: 'in_design',
   },
 ];
 
@@ -250,9 +393,16 @@ const initialChangeRequests: ChangeRequest[] = [
     title: 'Concealed Magnetic Track Lights in Living Dining',
     description:
       'Client requested upgrading 4 conventional downlights to 3-meter magnetic recessed track lighting with dimmable spotlights.',
+    original_spec: '4x Standard 12W warm recessed LED downlights on 2 gang switches.',
+    requested_change: '3m Recessed magnetic track with 4x 10W magnetic spotlights and RF dimming module.',
     cost_impact: 34500,
     timeline_impact_days: 2,
+    requested_by: 'Rahul Sharma',
+    reviewed_by: 'Arjun Mehta',
+    client_decision: 'approved',
+    client_decision_notes: 'Approved during site mockup session.',
     status: 'approved',
+    approved_at: '2024-02-14T11:00:00Z',
     created_at: '2024-02-12T14:00:00Z',
   },
   {
@@ -263,10 +413,34 @@ const initialChangeRequests: ChangeRequest[] = [
     title: 'Smart Motorized Curtains in Master Suite',
     description:
       'Provision electrical raceway and motor tracks for automated sheer and blackout dual tracks.',
+    original_spec: 'Manual double curtain rod with ceiling concealment pelmet.',
+    requested_change: 'Somfy motorized dual curtain track with Zigbee wall switch and smart automation tie-in.',
     cost_impact: 22000,
     timeline_impact_days: 1,
-    status: 'under_review',
+    requested_by: 'Rahul Sharma',
+    reviewed_by: 'Arjun Mehta',
+    client_decision: 'pending',
+    client_decision_notes: 'Client evaluating quote against motor brand warranty.',
+    status: 'quoted',
     created_at: '2024-02-19T09:30:00Z',
+  },
+  {
+    id: 'eeeeeeee-0003-4eee-8eee-eeeeeeeeeeee',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    room_id: 'bbbbbbbb-0011-4bbb-8bbb-bbbbbbbbbbbb',
+    request_code: 'CR-003',
+    title: 'Add Wine Chiller Niche in Open Chef Kitchen',
+    description:
+      'Incorporate 300mm under-counter wine cooler cabinet with dedicated electrical socket.',
+    original_spec: 'Standard 600mm crockery base unit.',
+    requested_change: '300mm wine cooler niche + 300mm spice pullout with ventilation louvers.',
+    cost_impact: 18500,
+    timeline_impact_days: 0,
+    requested_by: 'Ananya Reddy',
+    reviewed_by: 'Kavita Sundaram',
+    client_decision: 'pending',
+    status: 'reviewed',
+    created_at: '2024-02-20T16:00:00Z',
   },
 ];
 
@@ -352,42 +526,57 @@ const initialProcurementOrders: ProcurementOrder[] = [
   {
     id: 'gggggggg-0001-4ggg-8ggg-gggggggggggg',
     project_id: SEED_PROJECT_ID,
+    material_id: 'ffffffff-0001-4fff-8fff-ffffffffffff',
+    material_name: 'Botticino Italian Marble 18mm Slab',
     po_number: 'PO-2024-001',
     vendor_name: 'Decorex Marble Importers, Banjara Hills',
     vendor_contact: '+91 98491 11222',
+    quantity: 420,
+    unit: 'sqft',
     order_date: '2024-01-28',
     expected_delivery_date: '2024-02-12',
     actual_delivery_date: '2024-02-11',
     total_amount: 195300,
     payment_status: 'paid',
-    delivery_status: 'received',
-    notes: 'All 420 sqft slabs delivered and inspected for hairline fissures.',
+    delivery_status: 'delivered',
+    notes: 'All 420 sqft slabs delivered and inspected for hairline fissures. Approved on site.',
+    created_at: '2024-01-28T09:00:00Z',
   },
   {
     id: 'gggggggg-0002-4ggg-8ggg-gggggggggggg',
     project_id: SEED_PROJECT_ID,
+    material_id: 'ffffffff-0003-4fff-8fff-ffffffffffff',
+    material_name: 'Blum Tandembox Antaro Soft-Close Drawers',
     po_number: 'PO-2024-002',
     vendor_name: 'Häfele & Blum Hardware Galleria, Jubilee Hills',
     vendor_contact: '+91 98492 33445',
+    quantity: 12,
+    unit: 'sets',
     order_date: '2024-02-15',
     expected_delivery_date: '2024-02-24',
     total_amount: 86400,
     payment_status: 'partially_paid',
-    delivery_status: 'ordered',
-    notes: 'Drawer slides and tip-on aventos mechanisms dispatched.',
+    delivery_status: 'in_transit',
+    notes: 'Drawer slides and tip-on aventos mechanisms dispatched via Bluedart tracking #BL99214.',
+    created_at: '2024-02-15T11:00:00Z',
   },
   {
     id: 'gggggggg-0003-4ggg-8ggg-gggggggggggg',
     project_id: SEED_PROJECT_ID,
+    material_id: 'ffffffff-0002-4fff-8fff-ffffffffffff',
+    material_name: 'BWP Marine Ply (710 Grade) Framework',
     po_number: 'PO-2024-003',
     vendor_name: 'Greenlam & Century Laminate Depot, Secunderabad',
     vendor_contact: '+91 98493 55667',
+    quantity: 680,
+    unit: 'sqft',
     order_date: '2024-02-18',
     expected_delivery_date: '2024-02-27',
     total_amount: 62000,
     payment_status: 'pending',
     delivery_status: 'ordered',
     notes: 'Natural Smoked Oak 1mm veneer sheets scheduled for delivery.',
+    created_at: '2024-02-18T14:00:00Z',
   },
 ];
 
@@ -517,22 +706,28 @@ const initialExpenses: Expense[] = [
   {
     id: 'kkkkkkkk-0001-4kkk-8kkk-kkkkkkkkkkkk',
     project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0001-4bbb-8bbb-bbbbbbbbbbbb',
     category: 'contractor_advance',
     amount: 45000,
     payment_mode: 'bank_transfer',
     paid_to: 'Ramesh Carpentry Contractor',
     status: 'approved',
     incurred_on: '2024-02-15',
+    notes: 'Stage 1 carpentry carcass assembly advance for living dining units.',
+    created_at: '2024-02-15T10:00:00Z',
   },
   {
     id: 'kkkkkkkk-0002-4kkk-8kkk-kkkkkkkkkkkk',
     project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0002-4bbb-8bbb-bbbbbbbbbbbb',
     category: 'material_local',
     amount: 8400,
     payment_mode: 'upi',
     paid_to: 'Sri Balaji Hardware & Fasteners',
     status: 'approved',
     incurred_on: '2024-02-18',
+    notes: 'Urgent SS 304 screws, expansion rawl plugs, and Fevicol Marine grade adhesive.',
+    created_at: '2024-02-18T12:00:00Z',
   },
   {
     id: 'kkkkkkkk-0003-4kkk-8kkk-kkkkkkkkkkkk',
@@ -543,6 +738,20 @@ const initialExpenses: Expense[] = [
     paid_to: 'Aparna Sarovar Residents Association Debris Pass',
     status: 'approved',
     incurred_on: '2024-01-20',
+    notes: 'Association debris movement and lift protection security deposit fee.',
+    created_at: '2024-01-20T09:00:00Z',
+  },
+  {
+    id: 'kkkkkkkk-0004-4kkk-8kkk-kkkkkkkkkkkk',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    category: 'transport',
+    amount: 6200,
+    payment_mode: 'cash',
+    paid_to: 'City Logistics Tempo Service',
+    status: 'approved',
+    incurred_on: '2024-02-10',
+    notes: 'Direct transit of architectural marble catalog samples from Hyderabad airport cargo.',
+    created_at: '2024-02-10T14:00:00Z',
   },
 ];
 
@@ -607,6 +816,31 @@ const initialPaymentMilestones: PaymentMilestone[] = [
     due_date: '2024-04-30',
     status: 'scheduled',
   },
+  // Villa Milestones
+  {
+    id: 'llllllll-0010-4lll-8lll-llllllllllll',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    milestone_code: 'MS-01',
+    name: 'Villa Booking & 3D Architectural Advance',
+    stage_trigger: 'Concept walkthrough sign-off',
+    percentage: 15,
+    amount: 630000,
+    due_date: '2024-02-05',
+    status: 'payment_received',
+    paid_at: '2024-02-06T12:00:00Z',
+    invoice_number: 'INV-2024-008',
+  },
+  {
+    id: 'llllllll-0011-4lll-8lll-llllllllllll',
+    project_id: 'aaaaaaaa-bbbb-4aaa-8aaa-bbbbbbbbbbbb',
+    milestone_code: 'MS-02',
+    name: 'Civil Demolition & MEP Conduit Rough-in',
+    stage_trigger: 'Electrical & sanitary conduit sign-off',
+    percentage: 25,
+    amount: 1050000,
+    due_date: '2024-03-15',
+    status: 'scheduled',
+  },
 ];
 
 const initialNotifications: Notification[] = [
@@ -645,10 +879,27 @@ const initialNotifications: Notification[] = [
   },
 ];
 
+const initialStudioSettings: StudioSettings = {
+  company_name: 'StudioFlow Interiors',
+  legal_name: 'StudioFlow Design & Build Private Limited',
+  gstin: '36AAACS1429B1Z8',
+  email: 'contact@studioflow.design',
+  phone: '+91 98490 12345',
+  address: 'Plot 84, Road No. 36, Jubilee Hills, Hyderabad, Telangana 500033',
+  currency: 'INR',
+  currency_symbol: '₹',
+  standard_timeline_weeks: 14,
+  default_gst_percentage: 18,
+  standard_design_fee_sqft: 250,
+  notes: 'Standard residential turnkey architecture fee terms and GST schedule.',
+};
+
 interface DemoState {
   currentUser: UserProfile;
   currentProjectId: string;
   projects: Project[];
+  clients: Client[];
+  teamMembers: UserProfile[];
   rooms: Room[];
   designVersions: DesignVersion[];
   approvals: Approval[];
@@ -661,72 +912,60 @@ interface DemoState {
   expenses: Expense[];
   paymentMilestones: PaymentMilestone[];
   notifications: Notification[];
+  studioSettings: StudioSettings;
 
   // Actions
   switchRole: (role: UserRole) => void;
   setCurrentProject: (projectId: string) => void;
+
+  // Projects
+  addProject: (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Project;
+  updateProject: (id: string, updates: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
+
+  // Clients
+  addClient: (client: Omit<Client, 'id' | 'created_at'>) => Client;
+  updateClient: (id: string, updates: Partial<Client>) => void;
+
+  // Team
+  addTeamMember: (member: Omit<UserProfile, 'id' | 'created_at'>) => UserProfile;
+  updateTeamMember: (id: string, updates: Partial<UserProfile>) => void;
+
+  // Expenses
+  addExpense: (expense: Omit<Expense, 'id' | 'created_at'>) => Expense;
+  updateExpense: (id: string, updates: Partial<Expense>) => void;
+
+  // Procurement
+  addProcurementOrder: (order: Omit<ProcurementOrder, 'id' | 'created_at'>) => ProcurementOrder;
+  updateProcurementOrder: (id: string, updates: Partial<ProcurementOrder>) => void;
+
+  // Change Requests
+  addChangeRequest: (cr: Omit<ChangeRequest, 'id' | 'created_at'>) => ChangeRequest;
+  updateChangeRequest: (id: string, updates: Partial<ChangeRequest>) => void;
+
+  // Approvals
   updateApprovalStatus: (
     id: string,
     status: 'approved' | 'rejected' | 'revision_requested',
     comments?: string
   ) => void;
+
+  // Settings
+  updateStudioSettings: (updates: Partial<StudioSettings>) => void;
+
+  // Utility
   markNotificationRead: (id: string) => void;
   resetDemoData: () => void;
 }
 
-export const useDemoStore = create<DemoState>((set) => ({
-  currentUser: DEMO_USERS.admin,
-  currentProjectId: SEED_PROJECT_ID,
-  projects: initialProjects,
-  rooms: initialRooms,
-  designVersions: initialDesignVersions,
-  approvals: initialApprovals,
-  changeRequests: initialChangeRequests,
-  materials: initialMaterials,
-  procurementOrders: initialProcurementOrders,
-  tasks: initialTasks,
-  siteUpdates: initialSiteUpdates,
-  issues: initialIssues,
-  expenses: initialExpenses,
-  paymentMilestones: initialPaymentMilestones,
-  notifications: initialNotifications,
-
-  switchRole: (role: UserRole) => {
-    set({ currentUser: DEMO_USERS[role] });
-  },
-
-  setCurrentProject: (projectId: string) => {
-    set({ currentProjectId: projectId });
-  },
-
-  updateApprovalStatus: (id, status, comments) => {
-    set((state) => ({
-      approvals: state.approvals.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status,
-              client_comments: comments ?? item.client_comments,
-              approved_at: status === 'approved' ? new Date().toISOString() : item.approved_at,
-            }
-          : item
-      ),
-    }));
-  },
-
-  markNotificationRead: (id) => {
-    set((state) => ({
-      notifications: state.notifications.map((n) =>
-        n.id === id ? { ...n, is_read: true } : n
-      ),
-    }));
-  },
-
-  resetDemoData: () => {
-    set({
+export const useDemoStore = create<DemoState>()(
+  persist(
+    (set, get) => ({
       currentUser: DEMO_USERS.admin,
       currentProjectId: SEED_PROJECT_ID,
       projects: initialProjects,
+      clients: initialClients,
+      teamMembers: initialTeamMembers,
       rooms: initialRooms,
       designVersions: initialDesignVersions,
       approvals: initialApprovals,
@@ -739,6 +978,292 @@ export const useDemoStore = create<DemoState>((set) => ({
       expenses: initialExpenses,
       paymentMilestones: initialPaymentMilestones,
       notifications: initialNotifications,
-    });
-  },
-}));
+      studioSettings: initialStudioSettings,
+
+      switchRole: (role: UserRole) => {
+        set({ currentUser: DEMO_USERS[role] });
+      },
+
+      setCurrentProject: (projectId: string) => {
+        set({ currentProjectId: projectId });
+      },
+
+      addProject: (projectData) => {
+        const id = 'proj-' + Math.random().toString(36).substring(2, 9);
+        const newProject: Project = {
+          ...projectData,
+          id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        // Create standard initial milestones for the project
+        const b = projectData.total_budget;
+        const newMilestones: PaymentMilestone[] = [
+          {
+            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            project_id: id,
+            milestone_code: 'MS-01',
+            name: 'Booking & Concept Sign-off',
+            stage_trigger: 'Contract signing',
+            percentage: 15,
+            amount: Math.round(b * 0.15),
+            due_date: projectData.estimated_start_date,
+            status: 'scheduled',
+          },
+          {
+            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            project_id: id,
+            milestone_code: 'MS-02',
+            name: 'Civil & MEP Rough-in',
+            stage_trigger: 'Rough-in completion',
+            percentage: 25,
+            amount: Math.round(b * 0.25),
+            due_date: projectData.estimated_start_date,
+            status: 'scheduled',
+          },
+          {
+            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            project_id: id,
+            milestone_code: 'MS-03',
+            name: 'Modular Carcass Dispatch',
+            stage_trigger: 'Factory dispatch',
+            percentage: 35,
+            amount: Math.round(b * 0.35),
+            due_date: projectData.target_handover_date,
+            status: 'scheduled',
+          },
+          {
+            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            project_id: id,
+            milestone_code: 'MS-04',
+            name: 'Finishing & Handover',
+            stage_trigger: 'Final possession',
+            percentage: 25,
+            amount: Math.round(b * 0.25),
+            due_date: projectData.target_handover_date,
+            status: 'scheduled',
+          },
+        ];
+
+        set((state) => ({
+          projects: [newProject, ...state.projects],
+          paymentMilestones: [...state.paymentMilestones, ...newMilestones],
+          currentProjectId: id,
+        }));
+        return newProject;
+      },
+
+      updateProject: (id, updates) => {
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
+          ),
+        }));
+      },
+
+      deleteProject: (id) => {
+        set((state) => ({
+          projects: state.projects.filter((p) => p.id !== id),
+          currentProjectId:
+            state.currentProjectId === id
+              ? state.projects.find((p) => p.id !== id)?.id || ''
+              : state.currentProjectId,
+        }));
+      },
+
+      addClient: (clientData) => {
+        const id = 'client-' + Math.random().toString(36).substring(2, 9);
+        const newClient: Client = {
+          ...clientData,
+          id,
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          clients: [newClient, ...state.clients],
+        }));
+        return newClient;
+      },
+
+      updateClient: (id, updates) => {
+        set((state) => ({
+          clients: state.clients.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+        }));
+      },
+
+      addTeamMember: (memberData) => {
+        const id = 'team-' + Math.random().toString(36).substring(2, 9);
+        const newMember: UserProfile = {
+          ...memberData,
+          id,
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          teamMembers: [newMember, ...state.teamMembers],
+        }));
+        return newMember;
+      },
+
+      updateTeamMember: (id, updates) => {
+        set((state) => ({
+          teamMembers: state.teamMembers.map((m) =>
+            m.id === id ? { ...m, ...updates } : m
+          ),
+        }));
+      },
+
+      addExpense: (expenseData) => {
+        const id = 'exp-' + Math.random().toString(36).substring(2, 9);
+        const newExpense: Expense = {
+          ...expenseData,
+          id,
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          expenses: [newExpense, ...state.expenses],
+        }));
+        return newExpense;
+      },
+
+      updateExpense: (id, updates) => {
+        set((state) => ({
+          expenses: state.expenses.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+        }));
+      },
+
+      addProcurementOrder: (orderData) => {
+        const id = 'po-' + Math.random().toString(36).substring(2, 9);
+        const newOrder: ProcurementOrder = {
+          ...orderData,
+          id,
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          procurementOrders: [newOrder, ...state.procurementOrders],
+        }));
+        return newOrder;
+      },
+
+      updateProcurementOrder: (id, updates) => {
+        set((state) => ({
+          procurementOrders: state.procurementOrders.map((o) =>
+            o.id === id ? { ...o, ...updates } : o
+          ),
+        }));
+      },
+
+      addChangeRequest: (crData) => {
+        const id = 'cr-' + Math.random().toString(36).substring(2, 9);
+        const newCR: ChangeRequest = {
+          ...crData,
+          id,
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          changeRequests: [newCR, ...state.changeRequests],
+        }));
+        return newCR;
+      },
+
+      updateChangeRequest: (id, updates) => {
+        set((state) => {
+          const currentCR = state.changeRequests.find((cr) => cr.id === id);
+          const wasApproved = currentCR?.status === 'approved';
+          const isNowApproved = updates.status === 'approved';
+
+          // When a change request is approved, reflect the cost impact in project budget
+          let updatedProjects = state.projects;
+          if (!wasApproved && isNowApproved && currentCR) {
+            const costDiff = updates.cost_impact ?? currentCR.cost_impact;
+            updatedProjects = state.projects.map((p) =>
+              p.id === currentCR.project_id
+                ? { ...p, total_budget: p.total_budget + costDiff }
+                : p
+            );
+          }
+
+          return {
+            projects: updatedProjects,
+            changeRequests: state.changeRequests.map((cr) =>
+              cr.id === id ? { ...cr, ...updates } : cr
+            ),
+          };
+        });
+      },
+
+      updateApprovalStatus: (id, status, comments) => {
+        set((state) => ({
+          approvals: state.approvals.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  status,
+                  client_comments: comments ?? item.client_comments,
+                  approved_at: status === 'approved' ? new Date().toISOString() : item.approved_at,
+                }
+              : item
+          ),
+        }));
+      },
+
+      updateStudioSettings: (updates) => {
+        set((state) => ({
+          studioSettings: { ...state.studioSettings, ...updates },
+        }));
+      },
+
+      markNotificationRead: (id) => {
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, is_read: true } : n
+          ),
+        }));
+      },
+
+      resetDemoData: () => {
+        set({
+          currentUser: DEMO_USERS.admin,
+          currentProjectId: SEED_PROJECT_ID,
+          projects: initialProjects,
+          clients: initialClients,
+          teamMembers: initialTeamMembers,
+          rooms: initialRooms,
+          designVersions: initialDesignVersions,
+          approvals: initialApprovals,
+          changeRequests: initialChangeRequests,
+          materials: initialMaterials,
+          procurementOrders: initialProcurementOrders,
+          tasks: initialTasks,
+          siteUpdates: initialSiteUpdates,
+          issues: initialIssues,
+          expenses: initialExpenses,
+          paymentMilestones: initialPaymentMilestones,
+          notifications: initialNotifications,
+          studioSettings: initialStudioSettings,
+        });
+        localStorage.removeItem('studioflow-demo-store-v2');
+      },
+    }),
+    {
+      name: 'studioflow-demo-store-v2',
+      partialize: (state) => ({
+        currentProjectId: state.currentProjectId,
+        projects: state.projects,
+        clients: state.clients,
+        teamMembers: state.teamMembers,
+        rooms: state.rooms,
+        designVersions: state.designVersions,
+        approvals: state.approvals,
+        changeRequests: state.changeRequests,
+        materials: state.materials,
+        procurementOrders: state.procurementOrders,
+        tasks: state.tasks,
+        siteUpdates: state.siteUpdates,
+        issues: state.issues,
+        expenses: state.expenses,
+        paymentMilestones: state.paymentMilestones,
+        studioSettings: state.studioSettings,
+      }),
+    }
+  )
+);

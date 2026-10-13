@@ -12,6 +12,22 @@ export interface UserProfile {
   phone?: string;
   avatar_url?: string;
   company_name?: string;
+  specialization?: string;
+  status?: 'available' | 'busy' | 'on_leave';
+  assigned_project_ids?: string[];
+  created_at?: string;
+}
+
+export interface Client {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  property_address: string;
+  city: string;
+  project_id?: string;
+  avatar_url?: string;
+  notes?: string;
   created_at?: string;
 }
 
@@ -89,6 +105,18 @@ export interface Approval {
   created_at?: string;
 }
 
+export type ChangeRequestStatus =
+  | 'draft'
+  | 'requested'
+  | 'submitted'
+  | 'under_review'
+  | 'reviewed'
+  | 'quoted'
+  | 'approved'
+  | 'rejected'
+  | 'implemented'
+  | 'cancelled';
+
 export interface ChangeRequest {
   id: string;
   project_id: string;
@@ -96,10 +124,15 @@ export interface ChangeRequest {
   request_code: string;
   title: string;
   description: string;
+  original_spec?: string;
+  requested_change?: string;
   cost_impact: number;
   timeline_impact_days: number;
   requested_by?: string;
-  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected';
+  reviewed_by?: string;
+  client_decision?: 'approved' | 'rejected' | 'pending';
+  client_decision_notes?: string;
+  status: ChangeRequestStatus;
   approved_at?: string;
   created_at?: string;
 }
@@ -121,18 +154,33 @@ export interface Material {
   created_at?: string;
 }
 
+export type ProcurementDeliveryStatus =
+  | 'draft'
+  | 'approved'
+  | 'ordered'
+  | 'dispatched'
+  | 'in_transit'
+  | 'received'
+  | 'delivered'
+  | 'installed'
+  | 'delayed';
+
 export interface ProcurementOrder {
   id: string;
   project_id: string;
+  material_id?: string;
+  material_name?: string;
   po_number: string;
   vendor_name: string;
   vendor_contact?: string;
+  quantity?: number;
+  unit?: string;
   order_date: string;
   expected_delivery_date?: string;
   actual_delivery_date?: string;
   total_amount: number;
   payment_status: 'pending' | 'partially_paid' | 'paid';
-  delivery_status: 'draft' | 'ordered' | 'dispatched' | 'received' | 'delayed';
+  delivery_status: ProcurementDeliveryStatus;
   notes?: string;
   created_at?: string;
 }
@@ -187,6 +235,7 @@ export interface Issue {
 export interface Expense {
   id: string;
   project_id: string;
+  room_id?: string;
   category: 'petty_cash' | 'contractor_advance' | 'material_local' | 'permit_fee' | 'transport';
   amount: number;
   payment_mode: 'upi' | 'bank_transfer' | 'cash' | 'cheque';
@@ -194,6 +243,7 @@ export interface Expense {
   receipt_url?: string;
   status: 'pending_verification' | 'approved' | 'reimbursed';
   incurred_on: string;
+  notes?: string;
   created_at?: string;
 }
 
@@ -222,4 +272,19 @@ export interface Notification {
   is_read: boolean;
   link?: string;
   created_at: string;
+}
+
+export interface StudioSettings {
+  company_name: string;
+  legal_name: string;
+  gstin: string;
+  email: string;
+  phone: string;
+  address: string;
+  currency: string;
+  currency_symbol: string;
+  standard_timeline_weeks: number;
+  default_gst_percentage: number;
+  standard_design_fee_sqft: number;
+  notes?: string;
 }
