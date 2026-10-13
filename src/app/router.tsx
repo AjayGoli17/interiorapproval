@@ -41,11 +41,43 @@ import { ClientPaymentsPage } from '@/features/client/pages/ClientPaymentsPage';
 // Error Page
 import { ErrorState } from '@/components/shared/ErrorState';
 
+// Panel-aware routing
+import { getActivePanel, getPanelEntryRoute } from '@/lib/panelConfig';
+
+function RootRouteHandler() {
+  const panel = getActivePanel();
+  if (panel) {
+    return <Navigate to={getPanelEntryRoute(panel)} replace />;
+  }
+  return <DemoLandingPage />;
+}
+
+function DirectDashboardRedirect() {
+  const panel = getActivePanel();
+  if (panel === 'client') return <Navigate to="/client/dashboard" replace />;
+  if (panel === 'team') return <Navigate to="/team/dashboard" replace />;
+  return <Navigate to="/admin/dashboard" replace />;
+}
+
+function PanelRouteGuard({
+  allowedPanel,
+  children,
+}: {
+  allowedPanel: 'admin' | 'team' | 'client';
+  children: React.ReactNode;
+}) {
+  const panel = getActivePanel();
+  if (panel && panel !== allowedPanel) {
+    return <Navigate to={getPanelEntryRoute(panel)} replace />;
+  }
+  return <>{children}</>;
+}
+
 export const router = createBrowserRouter([
-  // Demo Portal Entry
+  // Demo Portal Entry / Panel-specific root redirect
   {
     path: '/',
-    element: <DemoLandingPage />,
+    element: <RootRouteHandler />,
     errorElement: (
       <div className="p-8 max-w-lg mx-auto">
         <ErrorState
@@ -57,10 +89,20 @@ export const router = createBrowserRouter([
     ),
   },
 
+  // Direct /dashboard alias for subdomains
+  {
+    path: '/dashboard',
+    element: <DirectDashboardRedirect />,
+  },
+
   // 1. Admin Panel Routes (8 Screens)
   {
     path: '/admin',
-    element: <InternalLayout />,
+    element: (
+      <PanelRouteGuard allowedPanel="admin">
+        <InternalLayout />
+      </PanelRouteGuard>
+    ),
     children: [
       {
         index: true,
@@ -108,7 +150,11 @@ export const router = createBrowserRouter([
   // 2. Project Team Panel Routes (9 Screens)
   {
     path: '/team',
-    element: <InternalLayout />,
+    element: (
+      <PanelRouteGuard allowedPanel="team">
+        <InternalLayout />
+      </PanelRouteGuard>
+    ),
     children: [
       {
         index: true,
@@ -156,7 +202,11 @@ export const router = createBrowserRouter([
   // 3. Client Portal Routes (5 Screens)
   {
     path: '/client',
-    element: <ClientLayout />,
+    element: (
+      <PanelRouteGuard allowedPanel="client">
+        <ClientLayout />
+      </PanelRouteGuard>
+    ),
     children: [
       {
         index: true,

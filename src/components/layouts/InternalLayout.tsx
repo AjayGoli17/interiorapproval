@@ -27,6 +27,7 @@ import { DemoBanner } from '@/components/shared/DemoBanner';
 import { ProjectSelector } from '@/components/shared/ProjectSelector';
 import { useDemoStore } from '@/stores/demoStore';
 import { Button } from '@/components/ui/button';
+import { isPanelLocked, getActivePanel } from '@/lib/panelConfig';
 
 export function InternalLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -378,16 +379,18 @@ export function InternalLayout() {
                 )}
               </div>
 
-              {/* Portal link to client mode */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/client/dashboard')}
-                className="hidden lg:inline-flex text-xs h-8"
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5 text-stone-500" />
-                View as Client
-              </Button>
+              {/* Portal link to client mode (only in unlocked demo mode) */}
+              {!isPanelLocked() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/client/dashboard')}
+                  className="hidden lg:inline-flex text-xs h-8"
+                >
+                  <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5 text-stone-500" />
+                  View as Client
+                </Button>
+              )}
             </div>
           </header>
 

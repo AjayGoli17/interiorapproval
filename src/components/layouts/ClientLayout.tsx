@@ -17,6 +17,7 @@ import { DemoBanner } from '@/components/shared/DemoBanner';
 import { useDemoStore } from '@/stores/demoStore';
 import { Button } from '@/components/ui/button';
 import { ClientContactModal } from '@/features/client/components/ClientContactModal';
+import { isPanelLocked } from '@/lib/panelConfig';
 
 export function ClientLayout() {
   const navigate = useNavigate();
@@ -109,17 +110,19 @@ export function ClientLayout() {
               <span className="sm:hidden">Team</span>
             </Button>
 
-            {/* Role switch / Admin Quick Jump */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/admin/dashboard')}
-              className="text-xs h-8 border-stone-200 text-stone-600 hover:text-stone-900"
-            >
-              <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5 text-stone-400" />
-              <span className="hidden sm:inline">Admin Mode</span>
-              <span className="sm:hidden">Admin</span>
-            </Button>
+            {/* Role switch / Admin Quick Jump (only on unlocked multi-panel demo) */}
+            {!isPanelLocked() && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/admin/dashboard')}
+                className="text-xs h-8 border-stone-200 text-stone-600 hover:text-stone-900"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5 text-stone-400" />
+                <span className="hidden sm:inline">Admin Mode</span>
+                <span className="sm:hidden">Admin</span>
+              </Button>
+            )}
           </div>
         </div>
 

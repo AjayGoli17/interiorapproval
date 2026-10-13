@@ -115,12 +115,26 @@ export function DemoLandingPage() {
                 </ul>
               </div>
 
-              <Button
-                className="w-full text-xs h-9"
-                onClick={() => handleLaunchRole('admin', '/admin/dashboard')}
-              >
-                Launch Admin Panel <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
+              <div className="space-y-1.5 pt-1">
+                <Button
+                  className="w-full text-xs h-8.5 bg-[#2A5C45] hover:bg-[#204E38]"
+                  onClick={() => handleLaunchRole('admin', '/admin/dashboard')}
+                >
+                  Launch Admin Panel <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+                <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+                  <span className="font-mono text-[10px] text-stone-600 truncate">
+                    admin.yourdomain.com
+                  </span>
+                  <a
+                    href="/?panel=admin"
+                    className="text-[#2A5C45] hover:underline font-medium"
+                    title="Open Admin panel in locked/isolated link mode"
+                  >
+                    Test Isolated Link →
+                  </a>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -162,12 +176,26 @@ export function DemoLandingPage() {
                 </ul>
               </div>
 
-              <Button
-                className="w-full text-xs h-9"
-                onClick={() => handleLaunchRole('designer', '/team/dashboard')}
-              >
-                Launch Project Team <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
+              <div className="space-y-1.5 pt-1">
+                <Button
+                  className="w-full text-xs h-8.5 bg-[#2A5C45] hover:bg-[#204E38]"
+                  onClick={() => handleLaunchRole('designer', '/team/dashboard')}
+                >
+                  Launch Project Team <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+                <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+                  <span className="font-mono text-[10px] text-stone-600 truncate">
+                    team.yourdomain.com
+                  </span>
+                  <a
+                    href="/?panel=team"
+                    className="text-[#2A5C45] hover:underline font-medium"
+                    title="Open Project Team in locked/isolated link mode"
+                  >
+                    Test Isolated Link →
+                  </a>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -209,12 +237,26 @@ export function DemoLandingPage() {
                 </ul>
               </div>
 
-              <Button
-                className="w-full text-xs h-9"
-                onClick={() => handleLaunchRole('client', '/client/dashboard')}
-              >
-                Launch Client Portal <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
+              <div className="space-y-1.5 pt-1">
+                <Button
+                  className="w-full text-xs h-8.5 bg-[#2A5C45] hover:bg-[#204E38]"
+                  onClick={() => handleLaunchRole('client', '/client/dashboard')}
+                >
+                  Launch Client Portal <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+                <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+                  <span className="font-mono text-[10px] text-stone-600 truncate">
+                    client.yourdomain.com
+                  </span>
+                  <a
+                    href="/?panel=client"
+                    className="text-[#2A5C45] hover:underline font-medium"
+                    title="Open Client portal in locked/isolated link mode"
+                  >
+                    Test Isolated Link →
+                  </a>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
