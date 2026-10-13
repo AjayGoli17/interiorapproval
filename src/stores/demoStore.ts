@@ -233,6 +233,8 @@ const initialRooms: Room[] = [
     dimensions: '24 ft x 16 ft',
     area_sqft: 384,
     status: 'in_execution',
+    progress_percentage: 65,
+    specifications: 'Botticino Italian marble flooring, Saint-Gobain gypsum perimeter false ceiling with cove LED, fluted charcoal acoustic wall panelling behind TV unit.',
   },
   {
     id: 'bbbbbbbb-0002-4bbb-8bbb-bbbbbbbbbbbb',
@@ -242,6 +244,8 @@ const initialRooms: Room[] = [
     dimensions: '14 ft x 10 ft',
     area_sqft: 140,
     status: 'client_review',
+    progress_percentage: 45,
+    specifications: 'PU matte eucalyptus sage finish, Blum tandembox soft-close drawer runners, 20mm Calacatta Gold quartz countertop, chimney core duct 150mm.',
   },
   {
     id: 'bbbbbbbb-0003-4bbb-8bbb-bbbbbbbbbbbb',
@@ -251,6 +255,8 @@ const initialRooms: Room[] = [
     dimensions: '16 ft x 14 ft',
     area_sqft: 224,
     status: 'approved',
+    progress_percentage: 75,
+    specifications: 'Natural smoked oak veneer wardrobes, tinted bronze glass sliding shutters, automated curtain pelmet raceway, 3000K warm downlights.',
   },
   {
     id: 'bbbbbbbb-0004-4bbb-8bbb-bbbbbbbbbbbb',
@@ -260,6 +266,8 @@ const initialRooms: Room[] = [
     dimensions: '14 ft x 12 ft',
     area_sqft: 168,
     status: 'in_design',
+    progress_percentage: 20,
+    specifications: 'Ergonomic dual-study desk, soft-close toy storage drawers, wall shelving with cable grommets, pastel laminate accents.',
   },
   {
     id: 'bbbbbbbb-0005-4bbb-8bbb-bbbbbbbbbbbb',
@@ -269,6 +277,8 @@ const initialRooms: Room[] = [
     dimensions: '13 ft x 11 ft',
     area_sqft: 143,
     status: 'pending',
+    progress_percentage: 10,
+    specifications: 'Convertible daybed niche, floating study console, matte laminate bookshelves, two-way reading spotlights.',
   },
   // Rooms for Project 2 (Villa)
   {
@@ -279,6 +289,8 @@ const initialRooms: Room[] = [
     dimensions: '28 ft x 20 ft',
     area_sqft: 560,
     status: 'in_design',
+    progress_percentage: 30,
+    specifications: 'Double height chandelier structural anchor, Italian Statuario marble, acoustic baffle ceiling.',
   },
   {
     id: 'bbbbbbbb-0011-4bbb-8bbb-bbbbbbbbbbbb',
@@ -288,6 +300,8 @@ const initialRooms: Room[] = [
     dimensions: '18 ft x 14 ft',
     area_sqft: 252,
     status: 'in_design',
+    progress_percentage: 25,
+    specifications: 'Open island chef kitchen, integrated wine chiller niche, porcelain slab countertops.',
   },
 ];
 
@@ -338,6 +352,36 @@ const initialDesignVersions: DesignVersion[] = [
     status: 'approved',
     designer_notes: 'Signed off during site review meeting.',
     submitted_at: '2024-02-05T09:15:00Z',
+  },
+  {
+    id: 'cccccccc-0004-4ccc-8ccc-cccccccccccc',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0004-4bbb-8bbb-bbbbbbbbbbbb',
+    version_number: 'v1.1',
+    title: 'Kids Bedroom Dual Study & Bunk Framework Layout',
+    description:
+      'Dual-study station with ergonomic clearance, wall-mounted display cubbies, and rounded edges.',
+    preview_url:
+      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&auto=format&fit=crop&q=80',
+    render_type: '2d_cad',
+    status: 'under_review',
+    designer_notes: 'Updated cable grommets and softer corner radii per client feedback.',
+    submitted_at: '2024-02-19T11:00:00Z',
+  },
+  {
+    id: 'cccccccc-0005-4ccc-8ccc-cccccccccccc',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0005-4bbb-8bbb-bbbbbbbbbbbb',
+    version_number: 'v1.0',
+    title: 'Guest Bedroom Floating Desk & Daybed Concept',
+    description:
+      'Multi-purpose work desk with integrated pull-out daybed and minimalist overhead cabinetry.',
+    preview_url:
+      'https://images.unsplash.com/photo-1540518614846-7ede433c4ef4?w=800&auto=format&fit=crop&q=80',
+    render_type: 'moodboard',
+    status: 'draft',
+    designer_notes: 'Initial concept draft for internal team review before presentation.',
+    submitted_at: '2024-02-21T16:00:00Z',
   },
 ];
 
@@ -457,8 +501,11 @@ const initialMaterials: Material[] = [
     quantity: 420,
     estimated_rate: 480,
     actual_rate: 465,
+    proposed_price: 480,
+    selection_status: 'approved',
     approval_status: 'client_approved',
     procurement_status: 'delivered',
+    swatch_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400',
   },
   {
     id: 'ffffffff-0002-4fff-8fff-ffffffffffff',
@@ -472,6 +519,8 @@ const initialMaterials: Material[] = [
     quantity: 680,
     estimated_rate: 145,
     actual_rate: 142,
+    proposed_price: 145,
+    selection_status: 'approved',
     approval_status: 'client_approved',
     procurement_status: 'po_issued',
   },
@@ -487,6 +536,8 @@ const initialMaterials: Material[] = [
     quantity: 12,
     estimated_rate: 4200,
     actual_rate: 4100,
+    proposed_price: 4200,
+    selection_status: 'approved',
     approval_status: 'client_approved',
     procurement_status: 'in_transit',
   },
@@ -502,6 +553,8 @@ const initialMaterials: Material[] = [
     quantity: 32,
     estimated_rate: 850,
     actual_rate: 820,
+    proposed_price: 850,
+    selection_status: 'selected_by_client',
     approval_status: 'sample_approved',
     procurement_status: 'delivered',
   },
@@ -517,8 +570,46 @@ const initialMaterials: Material[] = [
     quantity: 45,
     estimated_rate: 680,
     actual_rate: 680,
+    proposed_price: 680,
+    selection_status: 'proposed',
     approval_status: 'spec_draft',
     procurement_status: 'not_ordered',
+  },
+  {
+    id: 'ffffffff-0006-4fff-8fff-ffffffffffff',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0001-4bbb-8bbb-bbbbbbbbbbbb',
+    item_code: 'MAT-WW-06',
+    name: 'Fluted Acoustic Charcoal Louver Panels',
+    category: 'woodwork',
+    brand_spec: 'CenturyPly 12mm E0 Acoustic Grade',
+    unit: 'sqft',
+    quantity: 180,
+    estimated_rate: 320,
+    actual_rate: 310,
+    proposed_price: 320,
+    selection_status: 'approved',
+    approval_status: 'client_approved',
+    procurement_status: 'po_issued',
+    swatch_url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400',
+  },
+  {
+    id: 'ffffffff-0007-4fff-8fff-ffffffffffff',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0002-4bbb-8bbb-bbbbbbbbbbbb',
+    item_code: 'MAT-ST-07',
+    name: 'Calacatta Gold 20mm Engineered Quartz Slab',
+    category: 'hardware',
+    brand_spec: 'Caesarstone 5111 / Polished Double Bevel',
+    unit: 'sqft',
+    quantity: 85,
+    estimated_rate: 550,
+    actual_rate: 550,
+    proposed_price: 550,
+    selection_status: 'proposed',
+    approval_status: 'spec_draft',
+    procurement_status: 'not_ordered',
+    swatch_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400',
   },
 ];
 
@@ -641,12 +732,40 @@ const initialTasks: Task[] = [
     priority: 'medium',
     progress_percent: 0,
   },
+  {
+    id: 'hhhhhhhh-0006-4hhh-8hhh-hhhhhhhhhhhh',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0003-4bbb-8bbb-bbbbbbbbbbbb',
+    title: 'Master Bedroom motorized curtain pelmet wiring',
+    category: 'electrical',
+    start_date: '2024-02-20',
+    due_date: '2024-02-28',
+    status: 'in_progress',
+    priority: 'medium',
+    progress_percent: 50,
+    blocker_notes: 'Awaiting client approval on change request CR-002',
+    dependencies: 'Somfy motorized motor supply',
+  },
+  {
+    id: 'hhhhhhhh-0007-4hhh-8hhh-hhhhhhhhhhhh',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0001-4bbb-8bbb-bbbbbbbbbbbb',
+    title: 'Primer and 1st coat acrylic wall putty application',
+    category: 'painting',
+    start_date: '2024-02-26',
+    due_date: '2024-03-05',
+    status: 'todo',
+    priority: 'medium',
+    progress_percent: 0,
+    dependencies: 'After marble polishing slurry cleanup',
+  },
 ];
 
 const initialSiteUpdates: SiteUpdate[] = [
   {
     id: 'iiiiiiii-0001-4iii-8iii-iiiiiiiiiiii',
     project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0001-4bbb-8bbb-bbbbbbbbbbbb',
     title: 'False Ceiling Gypsum Boarding Done in Living & Dining',
     description:
       'Completed Saint-Gobain channel perimeter grid and 12.5mm gypsum sheets. Recessed cove channel ready for LED strip testing.',
@@ -656,13 +775,16 @@ const initialSiteUpdates: SiteUpdate[] = [
     ],
     date: '2024-02-20',
     work_completed_summary: 'Framing 100%, joint taping in progress, zero level check passed.',
+    next_planned_activity: 'Acoustic louver battens anchoring and primer coat on ceiling joints.',
     workforce_count: 7,
     delay_flag: false,
     weather_conditions: 'Sunny 29°C',
+    is_client_visible: true,
   },
   {
     id: 'iiiiiiii-0002-4iii-8iii-iiiiiiiiiiii',
     project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0002-4bbb-8bbb-bbbbbbbbbbbb',
     title: 'Kitchen Plumbing Line Relocation & Tile Core-Cutting',
     description:
       'Completed under-sink dishwasher inlet water connection and water purifier drain point core cutting.',
@@ -671,9 +793,29 @@ const initialSiteUpdates: SiteUpdate[] = [
     ],
     date: '2024-02-16',
     work_completed_summary: 'Plumber completed pressure gauge leak test at 4 bar for 45 mins.',
+    next_planned_activity: 'Base cabinet carcass level shimming and dado granite ledge fixing.',
     workforce_count: 5,
     delay_flag: false,
     weather_conditions: 'Clear 31°C',
+    is_client_visible: true,
+  },
+  {
+    id: 'iiiiiiii-0003-4iii-8iii-iiiiiiiiiiii',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0003-4bbb-8bbb-bbbbbbbbbbbb',
+    title: 'Master Suite Electrical Conduit Checking & Switch Alignment',
+    description:
+      'Laser leveling verified for bedside two-way switch boxes and wall light junction boxes.',
+    photo_urls: [
+      'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=600&auto=format&fit=crop&q=80',
+    ],
+    date: '2024-02-22',
+    work_completed_summary: 'Verified 8 switch boxes with laser level; installed 25mm PVC heavy duty conduits.',
+    next_planned_activity: 'Pulling 2.5 sqmm copper wires and sensor profile raceway connections.',
+    workforce_count: 4,
+    delay_flag: false,
+    weather_conditions: 'Sunny 30°C',
+    is_client_visible: true,
   },
 ];
 
@@ -688,6 +830,7 @@ const initialIssues: Issue[] = [
       'Builder duct hole is 120mm whereas Faber curved chimney spec requires 150mm. Core cutter technician scheduled.',
     severity: 'high',
     status: 'action_assigned',
+    resolution_deadline: '2024-02-25',
   },
   {
     id: 'jjjjjjjj-0002-4jjj-8jjj-jjjjjjjjjjjj',
@@ -699,6 +842,19 @@ const initialIssues: Issue[] = [
       'Edge polishing buffing pad left a 3mm hairline chipped seam. Tile mastic epoxy filling required before crystallization.',
     severity: 'medium',
     status: 'investigating',
+    resolution_deadline: '2024-02-28',
+  },
+  {
+    id: 'jjjjjjjj-0003-4jjj-8jjj-jjjjjjjjjjjj',
+    project_id: SEED_PROJECT_ID,
+    room_id: 'bbbbbbbb-0004-4bbb-8bbb-bbbbbbbbbbbb',
+    issue_code: 'ISS-018',
+    title: 'Kids Bedroom Study Switchboard Height Discrepancy',
+    description:
+      'Conduit box placed at 900mm from floor, needs to be 750mm to align beneath study tabletop grommet pass-through.',
+    severity: 'low',
+    status: 'open',
+    resolution_deadline: '2024-03-02',
   },
 ];
 
@@ -949,6 +1105,41 @@ interface DemoState {
     status: 'approved' | 'rejected' | 'revision_requested',
     comments?: string
   ) => void;
+
+  // Rooms
+  addRoom: (room: Omit<Room, 'id'>) => Room;
+  updateRoom: (id: string, updates: Partial<Room>) => void;
+  deleteRoom: (id: string) => void;
+
+  // Designs
+  addDesignVersion: (version: Omit<DesignVersion, 'id' | 'submitted_at'>) => DesignVersion;
+  updateDesignVersion: (id: string, updates: Partial<DesignVersion>) => void;
+  submitDesignForApproval: (designId: string, approvalTitle?: string, approvalNotes?: string) => Approval;
+
+  // Approvals
+  addApproval: (approval: Omit<Approval, 'id' | 'created_at'>) => Approval;
+  updateApproval: (id: string, updates: Partial<Approval>) => void;
+  deleteApproval: (id: string) => void;
+
+  // Materials
+  addMaterial: (material: Omit<Material, 'id'>) => Material;
+  updateMaterial: (id: string, updates: Partial<Material>) => void;
+  deleteMaterial: (id: string) => void;
+
+  // Tasks
+  addTask: (task: Omit<Task, 'id'>) => Task;
+  updateTask: (id: string, updates: Partial<Task>) => void;
+  deleteTask: (id: string) => void;
+
+  // Site Updates
+  addSiteUpdate: (update: Omit<SiteUpdate, 'id'>) => SiteUpdate;
+  updateSiteUpdate: (id: string, updates: Partial<SiteUpdate>) => void;
+  deleteSiteUpdate: (id: string) => void;
+
+  // Issues
+  addIssue: (issue: Omit<Issue, 'id'>) => Issue;
+  updateIssue: (id: string, updates: Partial<Issue>) => void;
+  deleteIssue: (id: string) => void;
 
   // Settings
   updateStudioSettings: (updates: Partial<StudioSettings>) => void;
@@ -1206,6 +1397,255 @@ export const useDemoStore = create<DemoState>()(
         }));
       },
 
+      // Rooms
+      addRoom: (roomData) => {
+        const id = 'room-' + Math.random().toString(36).substring(2, 9);
+        const newRoom: Room = {
+          ...roomData,
+          id,
+        };
+        set((state) => ({
+          rooms: [...state.rooms, newRoom],
+        }));
+        return newRoom;
+      },
+
+      updateRoom: (id, updates) => {
+        set((state) => {
+          const updatedRooms = state.rooms.map((r) =>
+            r.id === id ? { ...r, ...updates } : r
+          );
+          const currentRoom = state.rooms.find((r) => r.id === id);
+          let updatedProjects = state.projects;
+          if (currentRoom) {
+            const projectRooms = updatedRooms.filter((r) => r.project_id === currentRoom.project_id);
+            if (projectRooms.length > 0) {
+              const totalProgress = projectRooms.reduce((acc, r) => acc + (r.progress_percentage || 0), 0);
+              const avgProgress = Math.round(totalProgress / projectRooms.length);
+              updatedProjects = state.projects.map((p) =>
+                p.id === currentRoom.project_id ? { ...p, progress_percentage: avgProgress, updated_at: new Date().toISOString() } : p
+              );
+            }
+          }
+          return {
+            rooms: updatedRooms,
+            projects: updatedProjects,
+          };
+        });
+      },
+
+      deleteRoom: (id) => {
+        set((state) => ({
+          rooms: state.rooms.filter((r) => r.id !== id),
+        }));
+      },
+
+      // Designs
+      addDesignVersion: (versionData) => {
+        const id = 'design-' + Math.random().toString(36).substring(2, 9);
+        const newDesign: DesignVersion = {
+          ...versionData,
+          id,
+          submitted_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          designVersions: [newDesign, ...state.designVersions],
+        }));
+        return newDesign;
+      },
+
+      updateDesignVersion: (id, updates) => {
+        set((state) => ({
+          designVersions: state.designVersions.map((d) =>
+            d.id === id ? { ...d, ...updates } : d
+          ),
+        }));
+      },
+
+      submitDesignForApproval: (designId, approvalTitle, approvalNotes) => {
+        const state = get();
+        const design = state.designVersions.find((d) => d.id === designId);
+        if (!design) throw new Error('Design version not found');
+
+        const updatedDesign: DesignVersion = {
+          ...design,
+          status: 'under_review',
+          designer_notes: approvalNotes || design.designer_notes,
+        };
+
+        const approvalId = 'appr-' + Math.random().toString(36).substring(2, 9);
+        const room = state.rooms.find((r) => r.id === design.room_id);
+        const title = approvalTitle || `${room ? room.name + ': ' : ''}${design.title} (${design.version_number})`;
+
+        const newApproval: Approval = {
+          id: approvalId,
+          project_id: design.project_id,
+          room_id: design.room_id,
+          design_version_id: design.id,
+          title,
+          category: 'design',
+          description: design.description,
+          status: 'pending',
+          internal_notes: approvalNotes,
+          due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          created_at: new Date().toISOString(),
+        };
+
+        const notifId = 'notif-' + Math.random().toString(36).substring(2, 9);
+        const newNotif: Notification = {
+          id: notifId,
+          user_id: SEED_CLIENT_ID,
+          project_id: design.project_id,
+          title: 'Design Approval Required',
+          message: `${title} is ready for client review and sign-off.`,
+          type: 'approval_required',
+          is_read: false,
+          link: '/client/approvals',
+          created_at: new Date().toISOString(),
+        };
+
+        const updatedRooms = state.rooms.map((r) =>
+          r.id === design.room_id && r.status === 'in_design'
+            ? { ...r, status: 'client_review' as const }
+            : r
+        );
+
+        set({
+          designVersions: state.designVersions.map((d) => (d.id === designId ? updatedDesign : d)),
+          approvals: [newApproval, ...state.approvals],
+          notifications: [newNotif, ...state.notifications],
+          rooms: updatedRooms,
+        });
+
+        return newApproval;
+      },
+
+      // Approvals
+      addApproval: (approvalData) => {
+        const id = 'appr-' + Math.random().toString(36).substring(2, 9);
+        const newApproval: Approval = {
+          ...approvalData,
+          id,
+          created_at: new Date().toISOString(),
+        };
+        set((state) => ({
+          approvals: [newApproval, ...state.approvals],
+        }));
+        return newApproval;
+      },
+
+      updateApproval: (id, updates) => {
+        set((state) => ({
+          approvals: state.approvals.map((a) => (a.id === id ? { ...a, ...updates } : a)),
+        }));
+      },
+
+      deleteApproval: (id) => {
+        set((state) => ({
+          approvals: state.approvals.filter((a) => a.id !== id),
+        }));
+      },
+
+      // Materials
+      addMaterial: (materialData) => {
+        const id = 'mat-' + Math.random().toString(36).substring(2, 9);
+        const newMaterial: Material = {
+          ...materialData,
+          id,
+        };
+        set((state) => ({
+          materials: [newMaterial, ...state.materials],
+        }));
+        return newMaterial;
+      },
+
+      updateMaterial: (id, updates) => {
+        set((state) => ({
+          materials: state.materials.map((m) => (m.id === id ? { ...m, ...updates } : m)),
+        }));
+      },
+
+      deleteMaterial: (id) => {
+        set((state) => ({
+          materials: state.materials.filter((m) => m.id !== id),
+        }));
+      },
+
+      // Tasks
+      addTask: (taskData) => {
+        const id = 'task-' + Math.random().toString(36).substring(2, 9);
+        const newTask: Task = {
+          ...taskData,
+          id,
+        };
+        set((state) => ({
+          tasks: [newTask, ...state.tasks],
+        }));
+        return newTask;
+      },
+
+      updateTask: (id, updates) => {
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+        }));
+      },
+
+      deleteTask: (id) => {
+        set((state) => ({
+          tasks: state.tasks.filter((t) => t.id !== id),
+        }));
+      },
+
+      // Site Updates
+      addSiteUpdate: (updateData) => {
+        const id = 'siteup-' + Math.random().toString(36).substring(2, 9);
+        const newUpdate: SiteUpdate = {
+          ...updateData,
+          id,
+        };
+        set((state) => ({
+          siteUpdates: [newUpdate, ...state.siteUpdates],
+        }));
+        return newUpdate;
+      },
+
+      updateSiteUpdate: (id, updates) => {
+        set((state) => ({
+          siteUpdates: state.siteUpdates.map((s) => (s.id === id ? { ...s, ...updates } : s)),
+        }));
+      },
+
+      deleteSiteUpdate: (id) => {
+        set((state) => ({
+          siteUpdates: state.siteUpdates.filter((s) => s.id !== id),
+        }));
+      },
+
+      // Issues
+      addIssue: (issueData) => {
+        const id = 'issue-' + Math.random().toString(36).substring(2, 9);
+        const newIssue: Issue = {
+          ...issueData,
+          id,
+        };
+        set((state) => ({
+          issues: [newIssue, ...state.issues],
+        }));
+        return newIssue;
+      },
+
+      updateIssue: (id, updates) => {
+        set((state) => ({
+          issues: state.issues.map((i) => (i.id === id ? { ...i, ...updates } : i)),
+        }));
+      },
+
+      deleteIssue: (id) => {
+        set((state) => ({
+          issues: state.issues.filter((i) => i.id !== id),
+        }));
+      },
+
       updateStudioSettings: (updates) => {
         set((state) => ({
           studioSettings: { ...state.studioSettings, ...updates },
@@ -1242,10 +1682,11 @@ export const useDemoStore = create<DemoState>()(
           studioSettings: initialStudioSettings,
         });
         localStorage.removeItem('studioflow-demo-store-v2');
+        localStorage.removeItem('studioflow-demo-store-v3');
       },
     }),
     {
-      name: 'studioflow-demo-store-v2',
+      name: 'studioflow-demo-store-v3',
       partialize: (state) => ({
         currentProjectId: state.currentProjectId,
         projects: state.projects,

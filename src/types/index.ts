@@ -69,6 +69,8 @@ export interface Room {
   dimensions?: string;
   area_sqft?: number;
   status: 'pending' | 'in_design' | 'client_review' | 'approved' | 'in_execution' | 'completed';
+  progress_percentage?: number;
+  specifications?: string;
   created_at?: string;
 }
 
@@ -100,6 +102,7 @@ export interface Approval {
   status: 'pending' | 'approved' | 'rejected' | 'revision_requested';
   due_date?: string;
   client_comments?: string;
+  internal_notes?: string;
   approved_at?: string;
   approved_by?: string;
   created_at?: string;
@@ -151,6 +154,9 @@ export interface Material {
   actual_rate: number;
   approval_status: 'spec_draft' | 'client_approved' | 'sample_approved' | 'rejected';
   procurement_status: 'not_ordered' | 'po_issued' | 'in_transit' | 'delivered' | 'inspected';
+  selection_status?: 'proposed' | 'selected_by_client' | 'approved' | 'rejected';
+  proposed_price?: number;
+  swatch_url?: string;
   created_at?: string;
 }
 
@@ -190,28 +196,33 @@ export interface Task {
   project_id: string;
   room_id?: string;
   title: string;
-  category: 'civil' | 'electrical' | 'plumbing' | 'carpentry' | 'false_ceiling' | 'painting' | 'deep_cleaning' | 'snagging';
+  category: 'civil' | 'electrical' | 'plumbing' | 'carpentry' | 'false_ceiling' | 'painting' | 'deep_cleaning' | 'snagging' | 'flooring';
   assigned_to?: string;
   start_date?: string;
   due_date?: string;
   status: 'todo' | 'in_progress' | 'blocked' | 'under_inspection' | 'completed';
   priority: 'low' | 'medium' | 'high' | 'critical';
   progress_percent: number;
+  blocker_notes?: string;
+  dependencies?: string;
   created_at?: string;
 }
 
 export interface SiteUpdate {
   id: string;
   project_id: string;
+  room_id?: string;
   reporter_id?: string;
   title: string;
   description: string;
   photo_urls: string[];
   date: string;
   work_completed_summary?: string;
+  next_planned_activity?: string;
   workforce_count: number;
   delay_flag: boolean;
   weather_conditions?: string;
+  is_client_visible?: boolean;
   created_at?: string;
 }
 
@@ -228,6 +239,7 @@ export interface Issue {
   assigned_to?: string;
   photos?: string[];
   resolution_notes?: string;
+  resolution_deadline?: string;
   created_at?: string;
   resolved_at?: string;
 }

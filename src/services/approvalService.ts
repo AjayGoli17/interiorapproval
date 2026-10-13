@@ -15,6 +15,22 @@ export const approvalService = {
     return useDemoStore.getState().approvals.filter((a) => a.project_id === projectId);
   },
 
+  async createApproval(approval: Omit<Approval, 'id' | 'created_at'>): Promise<Approval> {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('approvals').insert([approval]).select().single();
+      if (error) throw error;
+      return data as Approval;
+    }
+    return useDemoStore.getState().addApproval(approval);
+  },
+
+  async updateApprovalRecord(id: string, updates: Partial<Approval>): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('approvals').update(updates).eq('id', id);
+    }
+    useDemoStore.getState().updateApproval(id, updates);
+  },
+
   async updateApproval(
     id: string,
     status: 'approved' | 'rejected' | 'revision_requested',
@@ -45,5 +61,21 @@ export const approvalService = {
       return data as ChangeRequest[];
     }
     return useDemoStore.getState().changeRequests.filter((c) => c.project_id === projectId);
+  },
+
+  async createChangeRequest(cr: Omit<ChangeRequest, 'id' | 'created_at'>): Promise<ChangeRequest> {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('change_requests').insert([cr]).select().single();
+      if (error) throw error;
+      return data as ChangeRequest;
+    }
+    return useDemoStore.getState().addChangeRequest(cr);
+  },
+
+  async updateChangeRequest(id: string, updates: Partial<ChangeRequest>): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('change_requests').update(updates).eq('id', id);
+    }
+    useDemoStore.getState().updateChangeRequest(id, updates);
   },
 };

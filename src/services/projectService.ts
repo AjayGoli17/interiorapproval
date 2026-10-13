@@ -40,6 +40,29 @@ export const projectService = {
     return useDemoStore.getState().rooms.filter((r) => r.project_id === projectId);
   },
 
+  async createRoom(room: Omit<Room, 'id'>): Promise<Room> {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('rooms').insert([room]).select().single();
+      if (error) throw error;
+      return data as Room;
+    }
+    return useDemoStore.getState().addRoom(room);
+  },
+
+  async updateRoom(id: string, updates: Partial<Room>): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('rooms').update(updates).eq('id', id);
+    }
+    useDemoStore.getState().updateRoom(id, updates);
+  },
+
+  async deleteRoom(id: string): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('rooms').delete().eq('id', id);
+    }
+    useDemoStore.getState().deleteRoom(id);
+  },
+
   async createProject(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase

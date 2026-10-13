@@ -19,7 +19,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
         onClick={() => onOpenChange(false)}
       />
       {/* Content */}
-      <div className="relative z-50 w-full max-w-lg rounded-lg border border-stone-200 bg-white p-6 shadow-lg animate-in fade-in-0 zoom-in-95">
+      <div className="relative z-50 w-full max-w-lg rounded-lg border border-stone-200 bg-white p-6 shadow-lg animate-in fade-in-0 zoom-in-95 max-h-[90vh] overflow-y-auto">
         {children}
         <button
           onClick={() => onOpenChange(false)}
@@ -29,6 +29,18 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
           <span className="sr-only">Close</span>
         </button>
       </div>
+    </div>
+  );
+}
+
+export function DialogContent({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("space-y-4", className)} {...props}>
+      {children}
     </div>
   );
 }
