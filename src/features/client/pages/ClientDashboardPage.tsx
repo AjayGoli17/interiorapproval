@@ -135,7 +135,7 @@ export function ClientDashboardPage() {
             <div className="col-span-2 sm:col-span-1">
               <span className="text-[11px] font-medium text-stone-500 block">Target Handover</span>
               <span className="text-sm sm:text-base font-semibold text-stone-900">
-                {project.target_handover_date || '30 Apr 2024'}
+                {project.target_handover_date || '30 Nov 2026'}
               </span>
             </div>
           </div>

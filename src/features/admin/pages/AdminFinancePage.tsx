@@ -400,7 +400,7 @@ export function AdminFinancePage() {
                         variant="outline"
                         className="h-6 text-[11px] px-2 border-stone-200 text-stone-700 hover:bg-stone-50"
                         onClick={() => {
-                          const invNum = `INV-2024-0${Math.floor(Math.random() * 50 + 40)}`;
+                          const invNum = `INV-2026-0${Math.floor(Math.random() * 50 + 40)}`;
                           updatePaymentMilestone(ms.id, {
                             status: 'invoice_raised',
                             invoice_number: invNum,

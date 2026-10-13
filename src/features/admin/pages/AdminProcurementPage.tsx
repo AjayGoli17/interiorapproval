@@ -91,7 +91,7 @@ export function AdminProcurementPage() {
     setEditingOrder(null);
     const count = procurementOrders.length + 1;
     setFormData({
-      po_number: `PO-2024-00${count}`,
+      po_number: `PO-2026-00${count}`,
       project_id: projects[0]?.id || '',
       vendor_name: '',
       vendor_contact: '+91 ',

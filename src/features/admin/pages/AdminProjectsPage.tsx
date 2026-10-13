@@ -85,7 +85,7 @@ export function AdminProjectsPage() {
     setEditingProject(null);
     const codeNum = projects.length + 1;
     setFormData({
-      project_code: `PRJ-HYD-240${codeNum}`,
+      project_code: `PRJ-HYD-260${codeNum}`,
       title: '',
       client_id: clients[0]?.id || '',
       lead_designer_id: teamMembers.find((m) => m.role === 'designer')?.id || '',
