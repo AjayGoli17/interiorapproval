@@ -52,9 +52,27 @@ const UUID_FOREIGN_KEYS = new Set([
   'user_id',
 ]);
 
+const DATE_OR_TIMESTAMP_KEYS = new Set([
+  'due_date',
+  'start_date',
+  'order_date',
+  'expected_delivery_date',
+  'actual_delivery_date',
+  'date',
+  'incurred_on',
+  'resolution_deadline',
+  'estimated_start_date',
+  'target_handover_date',
+  'submitted_at',
+  'reviewed_at',
+  'approved_at',
+  'resolved_at',
+  'paid_at',
+]);
+
 /**
  * Clean object before sending to Supabase by omitting undefined values
- * and transforming empty strings in foreign keys to null
+ * and transforming empty strings in foreign keys and dates to null
  */
 function cleanPayload<T extends Record<string, any>>(obj: T): Record<string, any> {
   const result: Record<string, any> = {};
@@ -62,6 +80,8 @@ function cleanPayload<T extends Record<string, any>>(obj: T): Record<string, any
     if (value === undefined) continue;
     // If a foreign key field ends in _id or is in UUID_FOREIGN_KEYS and is empty string, convert to null
     if ((key.endsWith('_id') || UUID_FOREIGN_KEYS.has(key)) && value === '') {
+      result[key] = null;
+    } else if (DATE_OR_TIMESTAMP_KEYS.has(key) && value === '') {
       result[key] = null;
     } else {
       result[key] = value;
@@ -913,6 +933,29 @@ export async function updateRemoteExpense(id: string, updates: Partial<Expense>)
     if (error) console.error('[SupabaseSync] Error updating expense:', error.message);
   } catch (err) {
     console.error('[SupabaseSync] Exception updating expense:', err);
+  }
+}
+
+export async function persistRemotePaymentMilestone(ms: PaymentMilestone): Promise<void> {
+  if (!isSupabaseConfigured || isDemoMode || !supabase) return;
+  try {
+    const payload = cleanPayload({
+      id: ms.id,
+      project_id: ms.project_id,
+      milestone_code: ms.milestone_code,
+      name: ms.name,
+      stage_trigger: ms.stage_trigger,
+      percentage: ms.percentage,
+      amount: ms.amount,
+      due_date: ms.due_date || null,
+      status: ms.status,
+      paid_at: ms.paid_at || null,
+      invoice_number: ms.invoice_number || null,
+    });
+    const { error } = await supabase.from('payment_milestones').upsert([payload]);
+    if (error) console.error('[SupabaseSync] Error persisting milestone:', error.message);
+  } catch (err) {
+    console.error('[SupabaseSync] Exception persisting milestone:', err);
   }
 }
 

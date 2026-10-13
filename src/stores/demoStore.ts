@@ -38,6 +38,7 @@ import {
   deleteRemoteIssue,
   persistRemoteExpense,
   updateRemoteExpense,
+  persistRemotePaymentMilestone,
   updateRemotePaymentMilestone,
   updateRemoteStudioSettings,
   persistRemoteNotification,
@@ -1235,34 +1236,48 @@ export const useDemoStore = create<DemoState>()(
         set({ isSyncing: true, syncError: null });
         try {
           const data = await fetchSupabaseData();
-          if (data && data.projects.length > 0) {
-            set((state) => ({
-              projects: data.projects,
-              clients: data.clients.length > 0 ? data.clients : state.clients,
-              teamMembers: data.teamMembers.length > 0 ? data.teamMembers : state.teamMembers,
-              rooms: data.rooms,
-              designVersions: data.designVersions,
-              approvals: data.approvals,
-              changeRequests: data.changeRequests,
-              materials: data.materials,
-              procurementOrders: data.procurementOrders,
-              tasks: data.tasks,
-              siteUpdates: data.siteUpdates,
-              issues: data.issues,
-              expenses: data.expenses,
-              paymentMilestones: data.paymentMilestones,
-              notifications: data.notifications,
-              studioSettings: data.studioSettings || state.studioSettings,
-              currentProjectId: data.projects[0]?.id || state.currentProjectId,
-              isSupabaseConnected: true,
-              isSyncing: false,
-            }));
+          if (data) {
+            set((state) => {
+              const hasProjects = data.projects.length > 0;
+              const keepCurrent = hasProjects && data.projects.some((p) => p.id === state.currentProjectId);
+              const nextProjectId = keepCurrent
+                ? state.currentProjectId
+                : hasProjects
+                ? data.projects[0].id
+                : state.currentProjectId;
+
+              return {
+                ...(hasProjects
+                  ? {
+                      projects: data.projects,
+                      rooms: data.rooms,
+                      designVersions: data.designVersions,
+                      approvals: data.approvals,
+                      changeRequests: data.changeRequests,
+                      materials: data.materials,
+                      procurementOrders: data.procurementOrders,
+                      tasks: data.tasks,
+                      siteUpdates: data.siteUpdates,
+                      issues: data.issues,
+                      expenses: data.expenses,
+                      paymentMilestones: data.paymentMilestones,
+                      notifications: data.notifications,
+                      currentProjectId: nextProjectId,
+                    }
+                  : {}),
+                clients: data.clients.length > 0 ? data.clients : state.clients,
+                teamMembers: data.teamMembers.length > 0 ? data.teamMembers : state.teamMembers,
+                studioSettings: data.studioSettings || state.studioSettings,
+                isSupabaseConnected: true,
+                isSyncing: false,
+              };
+            });
           } else {
-            set({ isSyncing: false });
+            set({ isSyncing: false, isSupabaseConnected: false });
           }
         } catch (err: any) {
           console.error('[Store] Sync failed:', err);
-          set({ isSyncing: false, syncError: err?.message || 'Sync failed' });
+          set({ isSyncing: false, syncError: err?.message || 'Sync failed', isSupabaseConnected: false });
         }
       },
 
@@ -1340,9 +1355,7 @@ export const useDemoStore = create<DemoState>()(
 
         persistRemoteProject(newProject);
         for (const ms of newMilestones) {
-          if (isSupabaseConfigured && !isDemoMode && supabase) {
-            supabase.from('payment_milestones').insert([ms]).then();
-          }
+          persistRemotePaymentMilestone(ms);
         }
 
         return newProject;
