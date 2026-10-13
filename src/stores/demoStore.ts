@@ -1,5 +1,48 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase, isSupabaseConfigured, isDemoMode } from '@/lib/supabase';
+import {
+  generateUuid,
+  fetchSupabaseData,
+  subscribeToRealtime,
+  persistRemoteProject,
+  updateRemoteProject,
+  deleteRemoteProject,
+  persistRemoteClient,
+  updateRemoteClient,
+  persistRemoteTeamMember,
+  updateRemoteTeamMember,
+  persistRemoteRoom,
+  updateRemoteRoom,
+  deleteRemoteRoom,
+  persistRemoteDesignVersion,
+  updateRemoteDesignVersion,
+  persistRemoteApproval,
+  updateRemoteApproval,
+  deleteRemoteApproval,
+  persistRemoteChangeRequest,
+  updateRemoteChangeRequest,
+  persistRemoteMaterial,
+  updateRemoteMaterial,
+  deleteRemoteMaterial,
+  persistRemoteProcurementOrder,
+  updateRemoteProcurementOrder,
+  persistRemoteTask,
+  updateRemoteTask,
+  deleteRemoteTask,
+  persistRemoteSiteUpdate,
+  updateRemoteSiteUpdate,
+  deleteRemoteSiteUpdate,
+  persistRemoteIssue,
+  updateRemoteIssue,
+  deleteRemoteIssue,
+  persistRemoteExpense,
+  updateRemoteExpense,
+  updateRemotePaymentMilestone,
+  updateRemoteStudioSettings,
+  persistRemoteNotification,
+  updateRemoteNotification,
+} from '@/lib/supabaseSync';
 import {
   UserProfile,
   Client,
@@ -1070,6 +1113,12 @@ interface DemoState {
   notifications: Notification[];
   studioSettings: StudioSettings;
 
+  // Supabase Integration & Synchronization
+  isSupabaseConnected: boolean;
+  isSyncing: boolean;
+  syncError: string | null;
+  syncWithSupabase: () => Promise<void>;
+
   // Actions
   switchRole: (role: UserRole) => void;
   setCurrentProject: (projectId: string) => void;
@@ -1176,6 +1225,47 @@ export const useDemoStore = create<DemoState>()(
       notifications: initialNotifications,
       studioSettings: initialStudioSettings,
 
+      // Supabase State
+      isSupabaseConnected: isSupabaseConfigured && !isDemoMode,
+      isSyncing: false,
+      syncError: null,
+
+      syncWithSupabase: async () => {
+        if (!isSupabaseConfigured || isDemoMode) return;
+        set({ isSyncing: true, syncError: null });
+        try {
+          const data = await fetchSupabaseData();
+          if (data && data.projects.length > 0) {
+            set((state) => ({
+              projects: data.projects,
+              clients: data.clients.length > 0 ? data.clients : state.clients,
+              teamMembers: data.teamMembers.length > 0 ? data.teamMembers : state.teamMembers,
+              rooms: data.rooms,
+              designVersions: data.designVersions,
+              approvals: data.approvals,
+              changeRequests: data.changeRequests,
+              materials: data.materials,
+              procurementOrders: data.procurementOrders,
+              tasks: data.tasks,
+              siteUpdates: data.siteUpdates,
+              issues: data.issues,
+              expenses: data.expenses,
+              paymentMilestones: data.paymentMilestones,
+              notifications: data.notifications,
+              studioSettings: data.studioSettings || state.studioSettings,
+              currentProjectId: data.projects[0]?.id || state.currentProjectId,
+              isSupabaseConnected: true,
+              isSyncing: false,
+            }));
+          } else {
+            set({ isSyncing: false });
+          }
+        } catch (err: any) {
+          console.error('[Store] Sync failed:', err);
+          set({ isSyncing: false, syncError: err?.message || 'Sync failed' });
+        }
+      },
+
       switchRole: (role: UserRole) => {
         set({ currentUser: DEMO_USERS[role] });
       },
@@ -1185,7 +1275,7 @@ export const useDemoStore = create<DemoState>()(
       },
 
       addProject: (projectData) => {
-        const id = 'proj-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newProject: Project = {
           ...projectData,
           id,
@@ -1197,7 +1287,7 @@ export const useDemoStore = create<DemoState>()(
         const b = projectData.total_budget;
         const newMilestones: PaymentMilestone[] = [
           {
-            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            id: generateUuid(),
             project_id: id,
             milestone_code: 'MS-01',
             name: 'Booking & Concept Sign-off',
@@ -1208,7 +1298,7 @@ export const useDemoStore = create<DemoState>()(
             status: 'scheduled',
           },
           {
-            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            id: generateUuid(),
             project_id: id,
             milestone_code: 'MS-02',
             name: 'Civil & MEP Rough-in',
@@ -1219,7 +1309,7 @@ export const useDemoStore = create<DemoState>()(
             status: 'scheduled',
           },
           {
-            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            id: generateUuid(),
             project_id: id,
             milestone_code: 'MS-03',
             name: 'Modular Carcass Dispatch',
@@ -1230,7 +1320,7 @@ export const useDemoStore = create<DemoState>()(
             status: 'scheduled',
           },
           {
-            id: 'ms-' + Math.random().toString(36).substring(2, 9),
+            id: generateUuid(),
             project_id: id,
             milestone_code: 'MS-04',
             name: 'Finishing & Handover',
@@ -1247,6 +1337,14 @@ export const useDemoStore = create<DemoState>()(
           paymentMilestones: [...state.paymentMilestones, ...newMilestones],
           currentProjectId: id,
         }));
+
+        persistRemoteProject(newProject);
+        for (const ms of newMilestones) {
+          if (isSupabaseConfigured && !isDemoMode && supabase) {
+            supabase.from('payment_milestones').insert([ms]).then();
+          }
+        }
+
         return newProject;
       },
 
@@ -1256,6 +1354,7 @@ export const useDemoStore = create<DemoState>()(
             p.id === id ? { ...p, ...updates, updated_at: new Date().toISOString() } : p
           ),
         }));
+        updateRemoteProject(id, updates);
       },
 
       deleteProject: (id) => {
@@ -1266,10 +1365,11 @@ export const useDemoStore = create<DemoState>()(
               ? state.projects.find((p) => p.id !== id)?.id || ''
               : state.currentProjectId,
         }));
+        deleteRemoteProject(id);
       },
 
       addClient: (clientData) => {
-        const id = 'client-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newClient: Client = {
           ...clientData,
           id,
@@ -1278,6 +1378,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           clients: [newClient, ...state.clients],
         }));
+        persistRemoteClient(newClient);
         return newClient;
       },
 
@@ -1285,10 +1386,11 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           clients: state.clients.map((c) => (c.id === id ? { ...c, ...updates } : c)),
         }));
+        updateRemoteClient(id, updates);
       },
 
       addTeamMember: (memberData) => {
-        const id = 'team-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newMember: UserProfile = {
           ...memberData,
           id,
@@ -1297,6 +1399,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           teamMembers: [newMember, ...state.teamMembers],
         }));
+        persistRemoteTeamMember(newMember);
         return newMember;
       },
 
@@ -1306,10 +1409,11 @@ export const useDemoStore = create<DemoState>()(
             m.id === id ? { ...m, ...updates } : m
           ),
         }));
+        updateRemoteTeamMember(id, updates);
       },
 
       addExpense: (expenseData) => {
-        const id = 'exp-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newExpense: Expense = {
           ...expenseData,
           id,
@@ -1318,6 +1422,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           expenses: [newExpense, ...state.expenses],
         }));
+        persistRemoteExpense(newExpense);
         return newExpense;
       },
 
@@ -1325,10 +1430,11 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           expenses: state.expenses.map((e) => (e.id === id ? { ...e, ...updates } : e)),
         }));
+        updateRemoteExpense(id, updates);
       },
 
       addProcurementOrder: (orderData) => {
-        const id = 'po-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newOrder: ProcurementOrder = {
           ...orderData,
           id,
@@ -1348,6 +1454,10 @@ export const useDemoStore = create<DemoState>()(
             materials: updatedMaterials,
           };
         });
+        persistRemoteProcurementOrder(newOrder);
+        if (orderData.material_id) {
+          updateRemoteMaterial(orderData.material_id, { procurement_status: 'po_issued' });
+        }
         return newOrder;
       },
 
@@ -1381,10 +1491,24 @@ export const useDemoStore = create<DemoState>()(
             materials: updatedMaterials,
           };
         });
+
+        updateRemoteProcurementOrder(id, updates);
+        const order = get().procurementOrders.find((o) => o.id === id);
+        if (order?.material_id && updates.delivery_status) {
+          const matProcStatus: Material['procurement_status'] =
+            updates.delivery_status === 'delivered'
+              ? 'delivered'
+              : updates.delivery_status === 'in_transit'
+              ? 'in_transit'
+              : updates.delivery_status === 'ordered' || updates.delivery_status === 'dispatched'
+              ? 'po_issued'
+              : 'not_ordered';
+          updateRemoteMaterial(order.material_id, { procurement_status: matProcStatus });
+        }
       },
 
       addChangeRequest: (crData) => {
-        const id = 'cr-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newCR: ChangeRequest = {
           ...crData,
           id,
@@ -1393,12 +1517,13 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           changeRequests: [newCR, ...state.changeRequests],
         }));
+        persistRemoteChangeRequest(newCR);
         return newCR;
       },
 
       updateChangeRequest: (id, updates) => {
+        const currentCR = get().changeRequests.find((cr) => cr.id === id);
         set((state) => {
-          const currentCR = state.changeRequests.find((cr) => cr.id === id);
           if (!currentCR) return state;
 
           const wasApproved = currentCR.status === 'approved';
@@ -1444,11 +1569,19 @@ export const useDemoStore = create<DemoState>()(
             ),
           };
         });
+
+        updateRemoteChangeRequest(id, updates);
+        if (currentCR) {
+          const proj = get().projects.find((p) => p.id === currentCR.project_id);
+          if (proj) {
+            updateRemoteProject(proj.id, { total_budget: proj.total_budget });
+          }
+        }
       },
 
       updateApprovalStatus: (id, status, comments) => {
+        const currentAppr = get().approvals.find((a) => a.id === id);
         set((state) => {
-          const currentAppr = state.approvals.find((a) => a.id === id);
           const updatedApprovals = state.approvals.map((item) =>
             item.id === id
               ? {
@@ -1535,11 +1668,37 @@ export const useDemoStore = create<DemoState>()(
             materials: updatedMaterials,
           };
         });
+
+        updateRemoteApproval(id, {
+          status,
+          client_comments: comments,
+          approved_at: status === 'approved' ? new Date().toISOString() : undefined,
+        });
+
+        if (currentAppr?.design_version_id) {
+          const newDesignStatus =
+            status === 'approved'
+              ? 'approved'
+              : status === 'revision_requested'
+              ? 'revision_requested'
+              : 'under_review';
+          updateRemoteDesignVersion(currentAppr.design_version_id, { status: newDesignStatus });
+        }
+
+        if (currentAppr?.room_id) {
+          const newRoomStatus =
+            status === 'approved'
+              ? 'approved'
+              : status === 'revision_requested'
+              ? 'in_design'
+              : 'client_review';
+          updateRemoteRoom(currentAppr.room_id, { status: newRoomStatus });
+        }
       },
 
       // Rooms
       addRoom: (roomData) => {
-        const id = 'room-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newRoom: Room = {
           ...roomData,
           id,
@@ -1559,6 +1718,13 @@ export const useDemoStore = create<DemoState>()(
             projects: updatedProjects,
           };
         });
+
+        persistRemoteRoom(newRoom);
+        const proj = get().projects.find((p) => p.id === newRoom.project_id);
+        if (proj) {
+          updateRemoteProject(proj.id, { progress_percentage: proj.progress_percentage });
+        }
+
         return newRoom;
       },
 
@@ -1584,11 +1750,20 @@ export const useDemoStore = create<DemoState>()(
             projects: updatedProjects,
           };
         });
+
+        updateRemoteRoom(id, updates);
+        const currentRoom = get().rooms.find((r) => r.id === id);
+        if (currentRoom) {
+          const proj = get().projects.find((p) => p.id === currentRoom.project_id);
+          if (proj) {
+            updateRemoteProject(proj.id, { progress_percentage: proj.progress_percentage });
+          }
+        }
       },
 
       deleteRoom: (id) => {
+        const currentRoom = get().rooms.find((r) => r.id === id);
         set((state) => {
-          const currentRoom = state.rooms.find((r) => r.id === id);
           const updatedRooms = state.rooms.filter((r) => r.id !== id);
           let updatedProjects = state.projects;
           if (currentRoom) {
@@ -1606,11 +1781,19 @@ export const useDemoStore = create<DemoState>()(
             projects: updatedProjects,
           };
         });
+
+        deleteRemoteRoom(id);
+        if (currentRoom) {
+          const proj = get().projects.find((p) => p.id === currentRoom.project_id);
+          if (proj) {
+            updateRemoteProject(proj.id, { progress_percentage: proj.progress_percentage });
+          }
+        }
       },
 
       // Designs
       addDesignVersion: (versionData) => {
-        const id = 'design-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newDesign: DesignVersion = {
           ...versionData,
           id,
@@ -1619,6 +1802,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           designVersions: [newDesign, ...state.designVersions],
         }));
+        persistRemoteDesignVersion(newDesign);
         return newDesign;
       },
 
@@ -1628,6 +1812,7 @@ export const useDemoStore = create<DemoState>()(
             d.id === id ? { ...d, ...updates } : d
           ),
         }));
+        updateRemoteDesignVersion(id, updates);
       },
 
       submitDesignForApproval: (designId, approvalTitle, approvalNotes) => {
@@ -1664,7 +1849,7 @@ export const useDemoStore = create<DemoState>()(
           );
         } else {
           targetApproval = {
-            id: 'appr-' + Math.random().toString(36).substring(2, 9),
+            id: generateUuid(),
             project_id: design.project_id,
             room_id: design.room_id,
             design_version_id: design.id,
@@ -1679,7 +1864,7 @@ export const useDemoStore = create<DemoState>()(
           updatedApprovals = [targetApproval, ...state.approvals];
         }
 
-        const notifId = 'notif-' + Math.random().toString(36).substring(2, 9);
+        const notifId = generateUuid();
         const newNotif: Notification = {
           id: notifId,
           user_id: SEED_CLIENT_ID,
@@ -1705,94 +1890,113 @@ export const useDemoStore = create<DemoState>()(
           rooms: updatedRooms,
         });
 
+        updateRemoteDesignVersion(designId, { status: 'under_review', designer_notes: approvalNotes });
+        persistRemoteApproval(targetApproval);
+        persistRemoteNotification(newNotif);
+        if (design.room_id) {
+          updateRemoteRoom(design.room_id, { status: 'client_review' });
+        }
+
         return targetApproval;
       },
 
       reviewDesignVersion: (designId, decision, feedback) => {
-        set((state) => {
-          const design = state.designVersions.find((d) => d.id === designId);
-          if (!design) return state;
+        const state = get();
+        const design = state.designVersions.find((d) => d.id === designId);
+        if (!design) return;
 
-          const updatedDesignVersions = state.designVersions.map((d) =>
-            d.id === designId
-              ? {
-                  ...d,
-                  status: decision,
-                  client_feedback: feedback || d.client_feedback,
-                  reviewed_at: new Date().toISOString(),
-                }
-              : d
+        const updatedDesignVersions = state.designVersions.map((d) =>
+          d.id === designId
+            ? {
+                ...d,
+                status: decision,
+                client_feedback: feedback || d.client_feedback,
+                reviewed_at: new Date().toISOString(),
+              }
+            : d
+        );
+
+        // Synchronize linked Approval if exists
+        const existingApproval = state.approvals.find((a) => a.design_version_id === designId);
+        let updatedApprovals = state.approvals;
+        let targetApproval: Approval;
+        if (existingApproval) {
+          targetApproval = {
+            ...existingApproval,
+            status: decision === 'approved' ? 'approved' : 'revision_requested',
+            client_comments: feedback || existingApproval.client_comments,
+            approved_at: decision === 'approved' ? new Date().toISOString() : existingApproval.approved_at,
+          };
+          updatedApprovals = state.approvals.map((a) =>
+            a.id === existingApproval.id ? targetApproval : a
           );
-
-          // Synchronize linked Approval if exists
-          const existingApproval = state.approvals.find((a) => a.design_version_id === designId);
-          let updatedApprovals = state.approvals;
-          if (existingApproval) {
-            updatedApprovals = state.approvals.map((a) =>
-              a.id === existingApproval.id
-                ? {
-                    ...a,
-                    status: decision === 'approved' ? 'approved' : 'revision_requested',
-                    client_comments: feedback || a.client_comments,
-                    approved_at: decision === 'approved' ? new Date().toISOString() : a.approved_at,
-                  }
-                : a
-            );
-          } else {
-            const newApproval: Approval = {
-              id: 'appr-' + Math.random().toString(36).substring(2, 9),
-              project_id: design.project_id,
-              room_id: design.room_id,
-              design_version_id: design.id,
-              title: `${design.title} (${design.version_number})`,
-              category: 'design',
-              description: design.description,
-              status: decision === 'approved' ? 'approved' : 'revision_requested',
-              client_comments: feedback,
-              approved_at: decision === 'approved' ? new Date().toISOString() : undefined,
-              created_at: new Date().toISOString(),
-            };
-            updatedApprovals = [newApproval, ...state.approvals];
-          }
-
-          // Synchronize linked Room
-          let updatedRooms = state.rooms;
-          if (design.room_id) {
-            updatedRooms = state.rooms.map((r) =>
-              r.id === design.room_id
-                ? {
-                    ...r,
-                    status: decision === 'approved' ? ('approved' as const) : ('in_design' as const),
-                  }
-                : r
-            );
-          }
-
-          // Add notification for the designer
-          const notif: Notification = {
-            id: 'notif-' + Math.random().toString(36).substring(2, 9),
-            user_id: '22222222-2222-4222-8222-222222222222',
+        } else {
+          targetApproval = {
+            id: generateUuid(),
             project_id: design.project_id,
-            title: decision === 'approved' ? 'Design Approved by Client' : 'Revision Requested on Design',
-            message: `${design.title} was ${decision === 'approved' ? 'approved' : 'marked for revision'}${feedback ? `: "${feedback}"` : '.'}`,
-            type: 'approval_required',
-            is_read: false,
-            link: '/team/designs',
+            room_id: design.room_id,
+            design_version_id: design.id,
+            title: `${design.title} (${design.version_number})`,
+            category: 'design',
+            description: design.description,
+            status: decision === 'approved' ? 'approved' : 'revision_requested',
+            client_comments: feedback,
+            approved_at: decision === 'approved' ? new Date().toISOString() : undefined,
             created_at: new Date().toISOString(),
           };
+          updatedApprovals = [targetApproval, ...state.approvals];
+        }
 
-          return {
-            designVersions: updatedDesignVersions,
-            approvals: updatedApprovals,
-            rooms: updatedRooms,
-            notifications: [notif, ...state.notifications],
-          };
+        // Synchronize linked Room
+        let updatedRooms = state.rooms;
+        if (design.room_id) {
+          updatedRooms = state.rooms.map((r) =>
+            r.id === design.room_id
+              ? {
+                  ...r,
+                  status: decision === 'approved' ? ('approved' as const) : ('in_design' as const),
+                }
+              : r
+          );
+        }
+
+        // Add notification for the designer
+        const notif: Notification = {
+          id: generateUuid(),
+          user_id: '22222222-2222-4222-8222-222222222222',
+          project_id: design.project_id,
+          title: decision === 'approved' ? 'Design Approved by Client' : 'Revision Requested on Design',
+          message: `${design.title} was ${decision === 'approved' ? 'approved' : 'marked for revision'}${feedback ? `: "${feedback}"` : '.'}`,
+          type: 'approval_required',
+          is_read: false,
+          link: '/team/designs',
+          created_at: new Date().toISOString(),
+        };
+
+        set({
+          designVersions: updatedDesignVersions,
+          approvals: updatedApprovals,
+          rooms: updatedRooms,
+          notifications: [notif, ...state.notifications],
         });
+
+        updateRemoteDesignVersion(designId, {
+          status: decision,
+          client_feedback: feedback,
+          reviewed_at: new Date().toISOString(),
+        });
+        persistRemoteApproval(targetApproval);
+        if (design.room_id) {
+          updateRemoteRoom(design.room_id, {
+            status: decision === 'approved' ? 'approved' : 'in_design',
+          });
+        }
+        persistRemoteNotification(notif);
       },
 
       // Approvals
       addApproval: (approvalData) => {
-        const id = 'appr-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newApproval: Approval = {
           ...approvalData,
           id,
@@ -1801,6 +2005,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           approvals: [newApproval, ...state.approvals],
         }));
+        persistRemoteApproval(newApproval);
         return newApproval;
       },
 
@@ -1808,17 +2013,19 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           approvals: state.approvals.map((a) => (a.id === id ? { ...a, ...updates } : a)),
         }));
+        updateRemoteApproval(id, updates);
       },
 
       deleteApproval: (id) => {
         set((state) => ({
           approvals: state.approvals.filter((a) => a.id !== id),
         }));
+        deleteRemoteApproval(id);
       },
 
       // Materials
       addMaterial: (materialData) => {
-        const id = 'mat-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newMaterial: Material = {
           ...materialData,
           id,
@@ -1826,6 +2033,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           materials: [newMaterial, ...state.materials],
         }));
+        persistRemoteMaterial(newMaterial);
         return newMaterial;
       },
 
@@ -1833,75 +2041,89 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           materials: state.materials.map((m) => (m.id === id ? { ...m, ...updates } : m)),
         }));
+        updateRemoteMaterial(id, updates);
       },
 
       selectMaterial: (materialId, selectionStatus, notes) => {
-        set((state) => {
-          const material = state.materials.find((m) => m.id === materialId);
-          if (!material) return state;
+        const state = get();
+        const material = state.materials.find((m) => m.id === materialId);
+        if (!material) return;
 
-          const approvalStatus: Material['approval_status'] =
-            selectionStatus === 'rejected' ? 'rejected' : 'client_approved';
-          const updatedMaterials = state.materials.map((m) =>
-            m.id === materialId
+        const approvalStatus: Material['approval_status'] =
+          selectionStatus === 'rejected' ? 'rejected' : 'client_approved';
+        const updatedMaterials = state.materials.map((m) =>
+          m.id === materialId
+            ? {
+                ...m,
+                selection_status: selectionStatus,
+                approval_status: approvalStatus,
+              }
+            : m
+        );
+
+        // Synchronize linked approval if exists
+        const linkedAppr = state.approvals.find(
+          (a) =>
+            (a.title && a.title.toLowerCase().includes(material.name.toLowerCase())) ||
+            (a.description && a.description.toLowerCase().includes(material.name.toLowerCase()))
+        );
+        let updatedApprovals = state.approvals;
+        if (linkedAppr) {
+          updatedApprovals = state.approvals.map((a) =>
+            a.id === linkedAppr.id
               ? {
-                  ...m,
-                  selection_status: selectionStatus,
-                  approval_status: approvalStatus,
+                  ...a,
+                  status: selectionStatus === 'rejected' ? ('revision_requested' as const) : ('approved' as const),
+                  client_comments: notes || (selectionStatus === 'rejected' ? 'Alternative requested' : 'Approved by client'),
+                  approved_at: selectionStatus !== 'rejected' ? new Date().toISOString() : undefined,
                 }
-              : m
+              : a
           );
+        }
 
-          // Synchronize linked approval if exists
-          const linkedAppr = state.approvals.find(
-            (a) =>
-              (a.title && a.title.toLowerCase().includes(material.name.toLowerCase())) ||
-              (a.description && a.description.toLowerCase().includes(material.name.toLowerCase()))
-          );
-          let updatedApprovals = state.approvals;
-          if (linkedAppr) {
-            updatedApprovals = state.approvals.map((a) =>
-              a.id === linkedAppr.id
-                ? {
-                    ...a,
-                    status: selectionStatus === 'rejected' ? ('revision_requested' as const) : ('approved' as const),
-                    client_comments: notes || (selectionStatus === 'rejected' ? 'Alternative requested' : 'Approved by client'),
-                    approved_at: selectionStatus !== 'rejected' ? new Date().toISOString() : undefined,
-                  }
-                : a
-            );
-          }
+        // Add notification for team
+        const notif: Notification = {
+          id: generateUuid(),
+          user_id: '22222222-2222-4222-8222-222222222222',
+          project_id: material.project_id,
+          title: selectionStatus === 'rejected' ? 'Material Alternative Requested' : 'Material Selected by Client',
+          message: `${material.name} ${selectionStatus === 'rejected' ? 'was rejected with request for alternative' : 'was confirmed by homeowner'}${notes ? `: "${notes}"` : '.'}`,
+          type: 'approval_required',
+          is_read: false,
+          link: '/team/materials',
+          created_at: new Date().toISOString(),
+        };
 
-          // Add notification for team
-          const notif: Notification = {
-            id: 'notif-' + Math.random().toString(36).substring(2, 9),
-            user_id: '22222222-2222-4222-8222-222222222222',
-            project_id: material.project_id,
-            title: selectionStatus === 'rejected' ? 'Material Alternative Requested' : 'Material Selected by Client',
-            message: `${material.name} ${selectionStatus === 'rejected' ? 'was rejected with request for alternative' : 'was confirmed by homeowner'}${notes ? `: "${notes}"` : '.'}`,
-            type: 'approval_required',
-            is_read: false,
-            link: '/team/materials',
-            created_at: new Date().toISOString(),
-          };
-
-          return {
-            materials: updatedMaterials,
-            approvals: updatedApprovals,
-            notifications: [notif, ...state.notifications],
-          };
+        set({
+          materials: updatedMaterials,
+          approvals: updatedApprovals,
+          notifications: [notif, ...state.notifications],
         });
+
+        updateRemoteMaterial(materialId, {
+          selection_status: selectionStatus,
+          approval_status: approvalStatus,
+        });
+        if (linkedAppr) {
+          updateRemoteApproval(linkedAppr.id, {
+            status: selectionStatus === 'rejected' ? 'revision_requested' : 'approved',
+            client_comments: notes,
+            approved_at: selectionStatus !== 'rejected' ? new Date().toISOString() : undefined,
+          });
+        }
+        persistRemoteNotification(notif);
       },
 
       deleteMaterial: (id) => {
         set((state) => ({
           materials: state.materials.filter((m) => m.id !== id),
         }));
+        deleteRemoteMaterial(id);
       },
 
       // Tasks
       addTask: (taskData) => {
-        const id = 'task-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newTask: Task = {
           ...taskData,
           id,
@@ -1909,6 +2131,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           tasks: [newTask, ...state.tasks],
         }));
+        persistRemoteTask(newTask);
         return newTask;
       },
 
@@ -1916,17 +2139,19 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
         }));
+        updateRemoteTask(id, updates);
       },
 
       deleteTask: (id) => {
         set((state) => ({
           tasks: state.tasks.filter((t) => t.id !== id),
         }));
+        deleteRemoteTask(id);
       },
 
       // Site Updates
       addSiteUpdate: (updateData) => {
-        const id = 'siteup-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newUpdate: SiteUpdate = {
           ...updateData,
           id,
@@ -1934,6 +2159,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           siteUpdates: [newUpdate, ...state.siteUpdates],
         }));
+        persistRemoteSiteUpdate(newUpdate);
         return newUpdate;
       },
 
@@ -1941,17 +2167,19 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           siteUpdates: state.siteUpdates.map((s) => (s.id === id ? { ...s, ...updates } : s)),
         }));
+        updateRemoteSiteUpdate(id, updates);
       },
 
       deleteSiteUpdate: (id) => {
         set((state) => ({
           siteUpdates: state.siteUpdates.filter((s) => s.id !== id),
         }));
+        deleteRemoteSiteUpdate(id);
       },
 
       // Issues
       addIssue: (issueData) => {
-        const id = 'issue-' + Math.random().toString(36).substring(2, 9);
+        const id = generateUuid();
         const newIssue: Issue = {
           ...issueData,
           id,
@@ -1959,6 +2187,7 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           issues: [newIssue, ...state.issues],
         }));
+        persistRemoteIssue(newIssue);
         return newIssue;
       },
 
@@ -1966,35 +2195,41 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           issues: state.issues.map((i) => (i.id === id ? { ...i, ...updates } : i)),
         }));
+        updateRemoteIssue(id, updates);
       },
 
       deleteIssue: (id) => {
         set((state) => ({
           issues: state.issues.filter((i) => i.id !== id),
         }));
+        deleteRemoteIssue(id);
       },
 
       updateStudioSettings: (updates) => {
         set((state) => ({
           studioSettings: { ...state.studioSettings, ...updates },
         }));
+        updateRemoteStudioSettings(updates);
       },
 
       updatePaymentMilestone: (id, updates) => {
+        const paid_at =
+          updates.status === 'payment_received'
+            ? updates.paid_at || new Date().toISOString()
+            : undefined;
+
         set((state) => ({
           paymentMilestones: state.paymentMilestones.map((m) =>
             m.id === id
               ? {
                   ...m,
                   ...updates,
-                  paid_at:
-                    updates.status === 'payment_received'
-                      ? updates.paid_at || new Date().toISOString()
-                      : m.paid_at,
+                  paid_at: paid_at || m.paid_at,
                 }
               : m
           ),
         }));
+        updateRemotePaymentMilestone(id, { ...updates, ...(paid_at ? { paid_at } : {}) });
       },
 
       markNotificationRead: (id) => {
@@ -2003,6 +2238,7 @@ export const useDemoStore = create<DemoState>()(
             n.id === id ? { ...n, is_read: true } : n
           ),
         }));
+        updateRemoteNotification(id, { is_read: true });
       },
 
       resetDemoData: () => {
@@ -2081,3 +2317,12 @@ export const useDemoStore = create<DemoState>()(
     }
   )
 );
+
+// Automatically initialize Supabase sync and realtime listener if configured
+if (isSupabaseConfigured && !isDemoMode) {
+  useDemoStore.getState().syncWithSupabase();
+  subscribeToRealtime(() => {
+    useDemoStore.getState().syncWithSupabase();
+  });
+}
+

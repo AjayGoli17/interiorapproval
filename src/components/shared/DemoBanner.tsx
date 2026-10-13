@@ -7,7 +7,7 @@ import { getActivePanel, getPanelLabel } from '@/lib/panelConfig';
 
 export function DemoBanner() {
   const navigate = useNavigate();
-  const { currentUser, switchRole } = useDemoStore();
+  const { currentUser, switchRole, isSupabaseConnected, isSyncing, syncWithSupabase } = useDemoStore();
   const activePanel = getActivePanel();
 
   // Automatically align demo identity to the locked panel on dedicated links
@@ -38,6 +38,27 @@ export function DemoBanner() {
         <span className="inline-flex items-center gap-1 font-semibold text-[#82C39B] tracking-wide uppercase text-[10px] bg-[#2A5C45]/40 px-2 py-0.5 rounded border border-[#2A5C45]/50">
           <Sparkles className="w-3 h-3" /> Demo Active
         </span>
+
+        {/* Database Status Indicator */}
+        {isSupabaseConnected ? (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-700/60" title="Connected to Supabase PostgreSQL database">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Supabase Live
+            <button
+              onClick={() => syncWithSupabase()}
+              disabled={isSyncing}
+              className="hover:text-white transition-opacity disabled:opacity-50 ml-0.5"
+              title="Refresh database sync"
+            >
+              <span className={`text-[10px] ${isSyncing ? 'animate-spin inline-block' : ''}`}>↻</span>
+            </button>
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-950/60 text-amber-300/90 border border-amber-700/40" title="Operating with pre-seeded local storage dataset">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            Local Demo Store
+          </span>
+        )}
 
         {activePanel ? (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-stone-800 text-stone-200 border border-stone-700">

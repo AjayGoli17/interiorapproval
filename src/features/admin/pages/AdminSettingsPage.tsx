@@ -19,10 +19,19 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { isSupabaseConfigured } from '@/lib/supabase';
+import { isSupabaseConfigured, isDemoMode } from '@/lib/supabase';
+import { RefreshCw } from 'lucide-react';
 
 export function AdminSettingsPage() {
-  const { studioSettings, updateStudioSettings, resetDemoData } = useDemoStore();
+  const {
+    studioSettings,
+    updateStudioSettings,
+    resetDemoData,
+    isSupabaseConnected,
+    isSyncing,
+    syncError,
+    syncWithSupabase,
+  } = useDemoStore();
 
   const [form, setForm] = useState({ ...studioSettings });
   const [savedMsg, setSavedMsg] = useState(false);
@@ -263,32 +272,66 @@ export function AdminSettingsPage() {
                 Backend & Database Architecture
               </CardTitle>
               <p className="text-xs text-stone-500">
-                Infrastructure status and Row Level Security (RLS) enforcement.
+                Live Supabase PostgreSQL connection status, real-time sync, and Row Level Security enforcement.
               </p>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono border-stone-300">
-              System Info
+            <Badge
+              variant="outline"
+              className={`text-[10px] font-mono ${
+                isSupabaseConnected
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  : 'bg-amber-50 text-amber-800 border-amber-300'
+              }`}
+            >
+              {isSupabaseConnected ? 'Supabase Connected' : 'Local Demo Mode'}
             </Badge>
           </CardHeader>
           <CardContent className="p-4 space-y-3 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 rounded bg-white border border-stone-200">
                 <span className="text-stone-400 text-[11px] block">Active Storage Engine</span>
-                <span className="font-semibold text-stone-900 block mt-0.5">
-                  {isSupabaseConfigured ? 'Supabase PostgreSQL Cloud' : 'Local In-Memory / LocalStorage Store'}
+                <span className="font-semibold text-stone-900 flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isSupabaseConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                    }`}
+                  />
+                  {isSupabaseConnected ? 'Supabase PostgreSQL Cloud (Live)' : 'Local Demo Store (localStorage)'}
                 </span>
                 <p className="text-[11px] text-stone-500 mt-1">
-                  Configured via <code className="font-mono bg-stone-100 px-1 py-0.5 rounded">.env</code>
+                  Controlled by <code className="font-mono bg-stone-100 px-1 py-0.5 rounded">VITE_USE_LOCAL_DEMO_DATA</code> in <code className="font-mono bg-stone-100 px-1 py-0.5 rounded">.env</code>
                 </p>
+                {isSupabaseConnected && (
+                  <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between">
+                    <span className="text-[11px] text-stone-600">Cross-Panel Realtime: <strong className="text-emerald-700">Active</strong></span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => syncWithSupabase()}
+                      disabled={isSyncing}
+                      className="text-[11px] h-6 px-2 text-stone-700 hover:text-stone-900"
+                    >
+                      <RefreshCw className={`w-3 h-3 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                      {isSyncing ? 'Syncing...' : 'Sync Database'}
+                    </Button>
+                  </div>
+                )}
+                {syncError && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">Sync notice: {syncError}</p>
+                )}
               </div>
 
               <div className="p-3 rounded bg-white border border-stone-200">
-                <span className="text-stone-400 text-[11px] block">Security Policies</span>
+                <span className="text-stone-400 text-[11px] block">Security Policies & Schema</span>
                 <span className="font-semibold text-stone-900 block mt-0.5">
-                  Row Level Security (RLS) Initial Policies Active
+                  Row Level Security (RLS) Configured
                 </span>
                 <p className="text-[11px] text-stone-500 mt-1">
-                  File: <code className="font-mono bg-stone-100 px-1 py-0.5 rounded">supabase/migrations/01_initial_schema.sql</code>
+                  Schema: <code className="font-mono bg-stone-100 px-1 py-0.5 rounded">supabase/schema.sql</code>
+                </p>
+                <p className="text-[11px] text-stone-500 mt-0.5">
+                  Seed Data: <code className="font-mono bg-stone-100 px-1 py-0.5 rounded">supabase/seed.sql</code>
                 </p>
               </div>
             </div>
