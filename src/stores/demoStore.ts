@@ -1115,6 +1115,7 @@ interface DemoState {
   addDesignVersion: (version: Omit<DesignVersion, 'id' | 'submitted_at'>) => DesignVersion;
   updateDesignVersion: (id: string, updates: Partial<DesignVersion>) => void;
   submitDesignForApproval: (designId: string, approvalTitle?: string, approvalNotes?: string) => Approval;
+  reviewDesignVersion: (designId: string, decision: 'approved' | 'revision_requested', feedback?: string) => void;
 
   // Approvals
   addApproval: (approval: Omit<Approval, 'id' | 'created_at'>) => Approval;
@@ -1124,6 +1125,7 @@ interface DemoState {
   // Materials
   addMaterial: (material: Omit<Material, 'id'>) => Material;
   updateMaterial: (id: string, updates: Partial<Material>) => void;
+  selectMaterial: (materialId: string, selectionStatus: 'selected_by_client' | 'approved' | 'rejected', notes?: string) => void;
   deleteMaterial: (id: string) => void;
 
   // Tasks
@@ -1383,8 +1385,9 @@ export const useDemoStore = create<DemoState>()(
       },
 
       updateApprovalStatus: (id, status, comments) => {
-        set((state) => ({
-          approvals: state.approvals.map((item) =>
+        set((state) => {
+          const currentAppr = state.approvals.find((a) => a.id === id);
+          const updatedApprovals = state.approvals.map((item) =>
             item.id === id
               ? {
                   ...item,
@@ -1393,8 +1396,49 @@ export const useDemoStore = create<DemoState>()(
                   approved_at: status === 'approved' ? new Date().toISOString() : item.approved_at,
                 }
               : item
-          ),
-        }));
+          );
+
+          let updatedDesignVersions = state.designVersions;
+          let updatedRooms = state.rooms;
+
+          if (currentAppr) {
+            // Synchronize linked DesignVersion
+            if (currentAppr.design_version_id) {
+              const newDesignStatus =
+                status === 'approved'
+                  ? 'approved'
+                  : status === 'revision_requested'
+                  ? 'revision_requested'
+                  : 'under_review';
+
+              updatedDesignVersions = state.designVersions.map((d) =>
+                d.id === currentAppr.design_version_id
+                  ? { ...d, status: newDesignStatus }
+                  : d
+              );
+            }
+
+            // Synchronize linked Room
+            if (currentAppr.room_id) {
+              const newRoomStatus =
+                status === 'approved'
+                  ? 'approved'
+                  : status === 'revision_requested'
+                  ? 'in_design'
+                  : 'client_review';
+
+              updatedRooms = state.rooms.map((r) =>
+                r.id === currentAppr.room_id ? { ...r, status: newRoomStatus } : r
+              );
+            }
+          }
+
+          return {
+            approvals: updatedApprovals,
+            designVersions: updatedDesignVersions,
+            rooms: updatedRooms,
+          };
+        });
       },
 
       // Rooms
@@ -1520,6 +1564,88 @@ export const useDemoStore = create<DemoState>()(
         return newApproval;
       },
 
+      reviewDesignVersion: (designId, decision, feedback) => {
+        set((state) => {
+          const design = state.designVersions.find((d) => d.id === designId);
+          if (!design) return state;
+
+          const updatedDesignVersions = state.designVersions.map((d) =>
+            d.id === designId
+              ? {
+                  ...d,
+                  status: decision,
+                  client_feedback: feedback || d.client_feedback,
+                  reviewed_at: new Date().toISOString(),
+                }
+              : d
+          );
+
+          // Synchronize linked Approval if exists
+          const existingApproval = state.approvals.find((a) => a.design_version_id === designId);
+          let updatedApprovals = state.approvals;
+          if (existingApproval) {
+            updatedApprovals = state.approvals.map((a) =>
+              a.id === existingApproval.id
+                ? {
+                    ...a,
+                    status: decision === 'approved' ? 'approved' : 'revision_requested',
+                    client_comments: feedback || a.client_comments,
+                    approved_at: decision === 'approved' ? new Date().toISOString() : a.approved_at,
+                  }
+                : a
+            );
+          } else {
+            const newApproval: Approval = {
+              id: 'appr-' + Math.random().toString(36).substring(2, 9),
+              project_id: design.project_id,
+              room_id: design.room_id,
+              design_version_id: design.id,
+              title: `${design.title} (${design.version_number})`,
+              category: 'design',
+              description: design.description,
+              status: decision === 'approved' ? 'approved' : 'revision_requested',
+              client_comments: feedback,
+              approved_at: decision === 'approved' ? new Date().toISOString() : undefined,
+              created_at: new Date().toISOString(),
+            };
+            updatedApprovals = [newApproval, ...state.approvals];
+          }
+
+          // Synchronize linked Room
+          let updatedRooms = state.rooms;
+          if (design.room_id) {
+            updatedRooms = state.rooms.map((r) =>
+              r.id === design.room_id
+                ? {
+                    ...r,
+                    status: decision === 'approved' ? ('approved' as const) : ('in_design' as const),
+                  }
+                : r
+            );
+          }
+
+          // Add notification for the designer
+          const notif: Notification = {
+            id: 'notif-' + Math.random().toString(36).substring(2, 9),
+            user_id: '22222222-2222-4222-8222-222222222222',
+            project_id: design.project_id,
+            title: decision === 'approved' ? 'Design Approved by Client' : 'Revision Requested on Design',
+            message: `${design.title} was ${decision === 'approved' ? 'approved' : 'marked for revision'}${feedback ? `: "${feedback}"` : '.'}`,
+            type: 'approval_required',
+            is_read: false,
+            link: '/team/designs',
+            created_at: new Date().toISOString(),
+          };
+
+          return {
+            designVersions: updatedDesignVersions,
+            approvals: updatedApprovals,
+            rooms: updatedRooms,
+            notifications: [notif, ...state.notifications],
+          };
+        });
+      },
+
       // Approvals
       addApproval: (approvalData) => {
         const id = 'appr-' + Math.random().toString(36).substring(2, 9);
@@ -1563,6 +1689,64 @@ export const useDemoStore = create<DemoState>()(
         set((state) => ({
           materials: state.materials.map((m) => (m.id === id ? { ...m, ...updates } : m)),
         }));
+      },
+
+      selectMaterial: (materialId, selectionStatus, notes) => {
+        set((state) => {
+          const material = state.materials.find((m) => m.id === materialId);
+          if (!material) return state;
+
+          const approvalStatus: Material['approval_status'] =
+            selectionStatus === 'rejected' ? 'rejected' : 'client_approved';
+          const updatedMaterials = state.materials.map((m) =>
+            m.id === materialId
+              ? {
+                  ...m,
+                  selection_status: selectionStatus,
+                  approval_status: approvalStatus,
+                }
+              : m
+          );
+
+          // Synchronize linked approval if exists
+          const linkedAppr = state.approvals.find(
+            (a) =>
+              (a.title && a.title.toLowerCase().includes(material.name.toLowerCase())) ||
+              (a.description && a.description.toLowerCase().includes(material.name.toLowerCase()))
+          );
+          let updatedApprovals = state.approvals;
+          if (linkedAppr) {
+            updatedApprovals = state.approvals.map((a) =>
+              a.id === linkedAppr.id
+                ? {
+                    ...a,
+                    status: selectionStatus === 'rejected' ? ('revision_requested' as const) : ('approved' as const),
+                    client_comments: notes || (selectionStatus === 'rejected' ? 'Alternative requested' : 'Approved by client'),
+                    approved_at: selectionStatus !== 'rejected' ? new Date().toISOString() : undefined,
+                  }
+                : a
+            );
+          }
+
+          // Add notification for team
+          const notif: Notification = {
+            id: 'notif-' + Math.random().toString(36).substring(2, 9),
+            user_id: '22222222-2222-4222-8222-222222222222',
+            project_id: material.project_id,
+            title: selectionStatus === 'rejected' ? 'Material Alternative Requested' : 'Material Selected by Client',
+            message: `${material.name} ${selectionStatus === 'rejected' ? 'was rejected with request for alternative' : 'was confirmed by homeowner'}${notes ? `: "${notes}"` : '.'}`,
+            type: 'approval_required',
+            is_read: false,
+            link: '/team/materials',
+            created_at: new Date().toISOString(),
+          };
+
+          return {
+            materials: updatedMaterials,
+            approvals: updatedApprovals,
+            notifications: [notif, ...state.notifications],
+          };
+        });
       },
 
       deleteMaterial: (id) => {

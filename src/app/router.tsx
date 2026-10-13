@@ -33,6 +33,7 @@ import { TeamExpensesPage } from '@/features/finance/pages/TeamExpensesPage';
 // Client Panel (5 screens)
 import { ClientDashboardPage } from '@/features/client/pages/ClientDashboardPage';
 import { ClientDesignsPage } from '@/features/client/pages/ClientDesignsPage';
+import { ClientMaterialsPage } from '@/features/client/pages/ClientMaterialsPage';
 import { ClientApprovalsPage } from '@/features/client/pages/ClientApprovalsPage';
 import { ClientProgressPage } from '@/features/client/pages/ClientProgressPage';
 import { ClientPaymentsPage } from '@/features/client/pages/ClientPaymentsPage';
@@ -168,6 +169,10 @@ export const router = createBrowserRouter([
       {
         path: 'designs',
         element: <ClientDesignsPage />,
+      },
+      {
+        path: 'materials',
+        element: <ClientMaterialsPage />,
       },
       {
         path: 'approvals',
