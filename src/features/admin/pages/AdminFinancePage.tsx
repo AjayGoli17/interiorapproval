@@ -35,6 +35,7 @@ export function AdminFinancePage() {
     expenses,
     paymentMilestones,
     addExpense,
+    updatePaymentMilestone,
   } = useDemoStore();
 
   // Financial Computations strictly from live store
@@ -370,6 +371,7 @@ export function AdminFinancePage() {
                 <TableHead>Due Date</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -390,6 +392,45 @@ export function AdminFinancePage() {
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={ms.status} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {ms.status === 'scheduled' ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-[11px] px-2 border-stone-200 text-stone-700 hover:bg-stone-50"
+                        onClick={() => {
+                          const invNum = `INV-2024-0${Math.floor(Math.random() * 50 + 40)}`;
+                          updatePaymentMilestone(ms.id, {
+                            status: 'invoice_raised',
+                            invoice_number: invNum,
+                          });
+                          setSuccessMsg(`Invoice ${invNum} raised for ${ms.name}.`);
+                          setTimeout(() => setSuccessMsg(''), 4000);
+                        }}
+                      >
+                        Raise Invoice
+                      </Button>
+                    ) : ms.status === 'invoice_raised' || ms.status === 'overdue' ? (
+                      <Button
+                        size="sm"
+                        className="h-6 text-[11px] px-2 bg-[#2A5C45] hover:bg-[#204E38] text-white"
+                        onClick={() => {
+                          updatePaymentMilestone(ms.id, {
+                            status: 'payment_received',
+                            paid_at: new Date().toISOString(),
+                          });
+                          setSuccessMsg(`Payment of ${formatINR(ms.amount)} for ${ms.name} marked received.`);
+                          setTimeout(() => setSuccessMsg(''), 4000);
+                        }}
+                      >
+                        Record Payment
+                      </Button>
+                    ) : (
+                      <span className="text-[11px] text-emerald-700 font-medium inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Paid
+                      </span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

@@ -1146,6 +1146,9 @@ interface DemoState {
   // Settings
   updateStudioSettings: (updates: Partial<StudioSettings>) => void;
 
+  // Payment Milestones
+  updatePaymentMilestone: (id: string, updates: Partial<PaymentMilestone>) => void;
+
   // Utility
   markNotificationRead: (id: string) => void;
   resetDemoData: () => void;
@@ -1331,18 +1334,53 @@ export const useDemoStore = create<DemoState>()(
           id,
           created_at: new Date().toISOString(),
         };
-        set((state) => ({
-          procurementOrders: [newOrder, ...state.procurementOrders],
-        }));
+        set((state) => {
+          let updatedMaterials = state.materials;
+          if (orderData.material_id) {
+            updatedMaterials = state.materials.map((m) =>
+              m.id === orderData.material_id
+                ? { ...m, procurement_status: 'po_issued' as const }
+                : m
+            );
+          }
+          return {
+            procurementOrders: [newOrder, ...state.procurementOrders],
+            materials: updatedMaterials,
+          };
+        });
         return newOrder;
       },
 
       updateProcurementOrder: (id, updates) => {
-        set((state) => ({
-          procurementOrders: state.procurementOrders.map((o) =>
+        set((state) => {
+          const order = state.procurementOrders.find((o) => o.id === id);
+          const updatedOrders = state.procurementOrders.map((o) =>
             o.id === id ? { ...o, ...updates } : o
-          ),
-        }));
+          );
+
+          let updatedMaterials = state.materials;
+          if (order?.material_id && updates.delivery_status) {
+            const matProcStatus: Material['procurement_status'] =
+              updates.delivery_status === 'delivered'
+                ? 'delivered'
+                : updates.delivery_status === 'in_transit'
+                ? 'in_transit'
+                : updates.delivery_status === 'ordered' || updates.delivery_status === 'dispatched'
+                ? 'po_issued'
+                : 'not_ordered';
+
+            updatedMaterials = state.materials.map((m) =>
+              m.id === order.material_id
+                ? { ...m, procurement_status: matProcStatus }
+                : m
+            );
+          }
+
+          return {
+            procurementOrders: updatedOrders,
+            materials: updatedMaterials,
+          };
+        });
       },
 
       addChangeRequest: (crData) => {
@@ -1361,16 +1399,40 @@ export const useDemoStore = create<DemoState>()(
       updateChangeRequest: (id, updates) => {
         set((state) => {
           const currentCR = state.changeRequests.find((cr) => cr.id === id);
-          const wasApproved = currentCR?.status === 'approved';
-          const isNowApproved = updates.status === 'approved';
+          if (!currentCR) return state;
 
-          // When a change request is approved, reflect the cost impact in project budget
+          const wasApproved = currentCR.status === 'approved';
+          const isNowApproved =
+            updates.status !== undefined ? updates.status === 'approved' : wasApproved;
+
           let updatedProjects = state.projects;
-          if (!wasApproved && isNowApproved && currentCR) {
+          if (!wasApproved && isNowApproved) {
+            // Transitioned from not approved to approved
             const costDiff = updates.cost_impact ?? currentCR.cost_impact;
             updatedProjects = state.projects.map((p) =>
               p.id === currentCR.project_id
                 ? { ...p, total_budget: p.total_budget + costDiff }
+                : p
+            );
+          } else if (wasApproved && !isNowApproved) {
+            // Transitioned from approved to declined/reopened
+            const costDiff = currentCR.cost_impact;
+            updatedProjects = state.projects.map((p) =>
+              p.id === currentCR.project_id
+                ? { ...p, total_budget: p.total_budget - costDiff }
+                : p
+            );
+          } else if (
+            wasApproved &&
+            isNowApproved &&
+            updates.cost_impact !== undefined &&
+            updates.cost_impact !== currentCR.cost_impact
+          ) {
+            // Cost impact adjustment on already approved change request
+            const delta = updates.cost_impact - currentCR.cost_impact;
+            updatedProjects = state.projects.map((p) =>
+              p.id === currentCR.project_id
+                ? { ...p, total_budget: p.total_budget + delta }
                 : p
             );
           }
@@ -1400,6 +1462,7 @@ export const useDemoStore = create<DemoState>()(
 
           let updatedDesignVersions = state.designVersions;
           let updatedRooms = state.rooms;
+          let updatedMaterials = state.materials;
 
           if (currentAppr) {
             // Synchronize linked DesignVersion
@@ -1431,12 +1494,45 @@ export const useDemoStore = create<DemoState>()(
                 r.id === currentAppr.room_id ? { ...r, status: newRoomStatus } : r
               );
             }
+
+            // Synchronize linked Material if category === 'material'
+            if (currentAppr.category === 'material') {
+              const targetTitle = currentAppr.title.toLowerCase();
+              const targetDesc = (currentAppr.description || '').toLowerCase();
+              updatedMaterials = state.materials.map((m) => {
+                const matchName =
+                  targetTitle.includes(m.name.toLowerCase()) ||
+                  targetDesc.includes(m.name.toLowerCase());
+                if (!matchName) return m;
+
+                const newSelectionStatus: Material['selection_status'] =
+                  status === 'approved'
+                    ? 'approved'
+                    : status === 'revision_requested'
+                    ? 'rejected'
+                    : m.selection_status;
+
+                const newApprovalStatus: Material['approval_status'] =
+                  status === 'approved'
+                    ? 'client_approved'
+                    : status === 'revision_requested'
+                    ? 'rejected'
+                    : m.approval_status;
+
+                return {
+                  ...m,
+                  selection_status: newSelectionStatus,
+                  approval_status: newApprovalStatus,
+                };
+              });
+            }
           }
 
           return {
             approvals: updatedApprovals,
             designVersions: updatedDesignVersions,
             rooms: updatedRooms,
+            materials: updatedMaterials,
           };
         });
       },
@@ -1448,9 +1544,21 @@ export const useDemoStore = create<DemoState>()(
           ...roomData,
           id,
         };
-        set((state) => ({
-          rooms: [...state.rooms, newRoom],
-        }));
+        set((state) => {
+          const updatedRooms = [...state.rooms, newRoom];
+          const projectRooms = updatedRooms.filter((r) => r.project_id === newRoom.project_id);
+          const totalProgress = projectRooms.reduce((acc, r) => acc + (r.progress_percentage || 0), 0);
+          const avgProgress = projectRooms.length > 0 ? Math.round(totalProgress / projectRooms.length) : 0;
+          const updatedProjects = state.projects.map((p) =>
+            p.id === newRoom.project_id
+              ? { ...p, progress_percentage: avgProgress, updated_at: new Date().toISOString() }
+              : p
+          );
+          return {
+            rooms: updatedRooms,
+            projects: updatedProjects,
+          };
+        });
         return newRoom;
       },
 
@@ -1479,9 +1587,25 @@ export const useDemoStore = create<DemoState>()(
       },
 
       deleteRoom: (id) => {
-        set((state) => ({
-          rooms: state.rooms.filter((r) => r.id !== id),
-        }));
+        set((state) => {
+          const currentRoom = state.rooms.find((r) => r.id === id);
+          const updatedRooms = state.rooms.filter((r) => r.id !== id);
+          let updatedProjects = state.projects;
+          if (currentRoom) {
+            const projectRooms = updatedRooms.filter((r) => r.project_id === currentRoom.project_id);
+            const totalProgress = projectRooms.reduce((acc, r) => acc + (r.progress_percentage || 0), 0);
+            const avgProgress = projectRooms.length > 0 ? Math.round(totalProgress / projectRooms.length) : 0;
+            updatedProjects = state.projects.map((p) =>
+              p.id === currentRoom.project_id
+                ? { ...p, progress_percentage: avgProgress, updated_at: new Date().toISOString() }
+                : p
+            );
+          }
+          return {
+            rooms: updatedRooms,
+            projects: updatedProjects,
+          };
+        });
       },
 
       // Designs
@@ -1517,23 +1641,43 @@ export const useDemoStore = create<DemoState>()(
           designer_notes: approvalNotes || design.designer_notes,
         };
 
-        const approvalId = 'appr-' + Math.random().toString(36).substring(2, 9);
         const room = state.rooms.find((r) => r.id === design.room_id);
-        const title = approvalTitle || `${room ? room.name + ': ' : ''}${design.title} (${design.version_number})`;
+        const title =
+          approvalTitle || `${room ? room.name + ': ' : ''}${design.title} (${design.version_number})`;
 
-        const newApproval: Approval = {
-          id: approvalId,
-          project_id: design.project_id,
-          room_id: design.room_id,
-          design_version_id: design.id,
-          title,
-          category: 'design',
-          description: design.description,
-          status: 'pending',
-          internal_notes: approvalNotes,
-          due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          created_at: new Date().toISOString(),
-        };
+        // Prevent duplicate approval records for the exact same design version
+        const existingApproval = state.approvals.find((a) => a.design_version_id === designId);
+        let updatedApprovals: Approval[];
+        let targetApproval: Approval;
+
+        if (existingApproval) {
+          targetApproval = {
+            ...existingApproval,
+            title,
+            status: 'pending',
+            description: design.description,
+            internal_notes: approvalNotes || existingApproval.internal_notes,
+            due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          };
+          updatedApprovals = state.approvals.map((a) =>
+            a.id === existingApproval.id ? targetApproval : a
+          );
+        } else {
+          targetApproval = {
+            id: 'appr-' + Math.random().toString(36).substring(2, 9),
+            project_id: design.project_id,
+            room_id: design.room_id,
+            design_version_id: design.id,
+            title,
+            category: 'design',
+            description: design.description,
+            status: 'pending',
+            internal_notes: approvalNotes,
+            due_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            created_at: new Date().toISOString(),
+          };
+          updatedApprovals = [targetApproval, ...state.approvals];
+        }
 
         const notifId = 'notif-' + Math.random().toString(36).substring(2, 9);
         const newNotif: Notification = {
@@ -1544,7 +1688,7 @@ export const useDemoStore = create<DemoState>()(
           message: `${title} is ready for client review and sign-off.`,
           type: 'approval_required',
           is_read: false,
-          link: '/client/approvals',
+          link: '/client/designs',
           created_at: new Date().toISOString(),
         };
 
@@ -1556,12 +1700,12 @@ export const useDemoStore = create<DemoState>()(
 
         set({
           designVersions: state.designVersions.map((d) => (d.id === designId ? updatedDesign : d)),
-          approvals: [newApproval, ...state.approvals],
+          approvals: updatedApprovals,
           notifications: [newNotif, ...state.notifications],
           rooms: updatedRooms,
         });
 
-        return newApproval;
+        return targetApproval;
       },
 
       reviewDesignVersion: (designId, decision, feedback) => {
@@ -1833,6 +1977,23 @@ export const useDemoStore = create<DemoState>()(
       updateStudioSettings: (updates) => {
         set((state) => ({
           studioSettings: { ...state.studioSettings, ...updates },
+        }));
+      },
+
+      updatePaymentMilestone: (id, updates) => {
+        set((state) => ({
+          paymentMilestones: state.paymentMilestones.map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  ...updates,
+                  paid_at:
+                    updates.status === 'payment_received'
+                      ? updates.paid_at || new Date().toISOString()
+                      : m.paid_at,
+                }
+              : m
+          ),
         }));
       },
 

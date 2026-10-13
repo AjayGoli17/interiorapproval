@@ -80,7 +80,8 @@ const MATERIAL_ALTERNATIVES: Record<
 };
 
 export function ClientMaterialsPage() {
-  const { materials, rooms, projects, currentProjectId, selectMaterial } = useDemoStore();
+  const { materials, rooms, projects, currentProjectId, selectMaterial, changeRequests, addChangeRequest } =
+    useDemoStore();
   const project = projects.find((p) => p.id === currentProjectId) || projects[0];
 
   const projectMaterials = materials.filter((m) => m.project_id === project?.id);
@@ -145,7 +146,32 @@ export function ClientMaterialsPage() {
       'selected_by_client',
       `Homeowner chose option: ${option.name} (${option.brand})`
     );
-    showToast(`Saved preference: ${option.name}`);
+
+    const rateDiff = option.rate - material.estimated_rate;
+    const totalDiff = Math.round(rateDiff * material.quantity);
+
+    if (totalDiff > 0) {
+      addChangeRequest({
+        project_id: material.project_id,
+        room_id: material.room_id,
+        request_code: `CR-00${changeRequests.length + 1}`,
+        title: `Finish Upgrade: ${option.name}`,
+        description: `Homeowner selected premium alternative finish for ${material.name}. Rate delta: +₹${rateDiff}/${material.unit} across ${material.quantity} ${material.unit}.`,
+        original_spec: `${material.name} (${material.brand_spec || 'Standard'})`,
+        requested_change: `${option.name} (${option.brand})`,
+        cost_impact: totalDiff,
+        timeline_impact_days: 0,
+        requested_by: 'Rahul Sharma (Client)',
+        status: 'quoted',
+        client_decision: 'pending',
+      });
+      showToast(
+        `Saved preference: ${option.name}. Variation quote of +${formatINR(totalDiff)} logged for review.`
+      );
+    } else {
+      showToast(`Saved preference: ${option.name}`);
+    }
+
     setActiveMaterialForOptions(null);
   };
 
