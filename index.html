@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shilpa Interiors · Live Demo</title>
+<style>
+:root{--bg:#f6f4ef;--bar:#24241f;--ink:#24241f;--mut:#7a786f;--line:#e8e5dc;--acc:#4b5e3c;--acc2:#ebefe3;--warn:#9a6a14;--warn-bg:#fbf0d9;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:14px/1.4 var(--font);background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--bar);color:#fff;flex:none}
+.brand{font-weight:600;white-space:nowrap}.brand small{display:block;font-weight:400;opacity:.65;font-size:11px}
+nav{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+nav button,.tool{font:inherit;border:0;border-radius:8px;padding:8px 13px;background:#3a3a34;color:#fff;cursor:pointer;white-space:nowrap}
+nav button:hover,.tool:hover{background:#4a4a43}
+nav button[aria-pressed=true]{background:#6f8a58}
+nav .sep{width:1px;background:#555;margin:4px 4px;flex:none}
+.tools{display:flex;gap:6px;align-items:center}
+.tool.alt{background:transparent;border:1px solid #666}
+select.tool{padding:7px 8px;max-width:170px}
+#banner{display:none;background:var(--warn-bg);color:var(--warn);padding:8px 14px;font-size:13px;border-bottom:1px solid #ecd9ae}
+#stage{flex:1;min-height:0;display:grid;gap:0;position:relative}
+iframe{border:0;width:100%;height:100%;background:#fff;display:none;min-width:0}
+.cap{display:none}
+/* layouts */
+#stage[data-l=admin]{grid-template-columns:1fr}#stage[data-l=admin] #f-admin{display:block}
+#stage[data-l=pm]{grid-template-columns:1fr}#stage[data-l=pm] #f-pm{display:block}
+#stage[data-l=portal]{grid-template-columns:1fr}#stage[data-l=portal] #f-portal{display:block}
+#stage[data-l=split]{grid-template-columns:1fr 1fr}#stage[data-l=split] #f-admin,#stage[data-l=split] #f-portal{display:block}
+#stage[data-l=split] #f-portal{border-left:3px solid var(--acc)}
+#stage[data-l=triple]{grid-template-columns:1fr 1fr 1fr}#stage[data-l=triple] iframe{display:block;border-left:3px solid var(--acc)}
+#stage[data-l=triple] iframe:first-child{border-left:0}
+/* demo script drawer */
+#script{position:absolute;right:12px;bottom:12px;width:min(360px,calc(100% - 24px));max-height:70%;overflow:auto;background:#fff;border:1px solid var(--line);
+  border-radius:14px;box-shadow:0 14px 40px -12px rgba(0,0,0,.35);padding:16px 18px;display:none;z-index:5}
+#script.on{display:block}
+#script h2{margin:0 0 4px;font-size:15px}#script p{margin:0 0 10px;color:var(--mut);font-size:12.5px}
+#script ol{margin:0;padding-left:20px}#script li{margin:0 0 9px;font-size:13px}
+#script li b{color:var(--acc)}
+#script .x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:18px;cursor:pointer;color:var(--mut)}
+@media (max-width:900px){.hide-s{display:none}.brand small{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Shilpa Interiors<small>Live demo · all panels share one project</small></div>
+  <nav id="nav" aria-label="Switch view">
+    <button data-l="admin" aria-pressed="true">🛠 Admin</button>
+    <button data-l="pm" aria-pressed="false">📋 Project Manager</button>
+    <button data-l="portal" aria-pressed="false">👤 Client Portal</button>
+    <span class="sep hide-s"></span>
+    <button data-l="split" class="hide-s" aria-pressed="false">Admin ⇄ Client</button>
+    <button data-l="triple" class="hide-s" aria-pressed="false">All three</button>
+  </nav>
+  <div class="tools">
+    <select class="tool hide-s" id="who" aria-label="Client viewing the portal" title="Which client the portal shows"></select>
+    <button class="tool alt" id="btnScript">Demo script</button>
+    <button class="tool alt" id="btnReset" title="Restore all sample data">Reset</button>
+  </div>
+</header>
+<div id="banner">This page was opened as a local file. Browsers often don't share storage between local files, so the panels may not stay in sync. Host the folder (Netlify Drop / GitHub Pages) or run a local server, then open this page again.</div>
+<main id="stage" data-l="admin">
+  <iframe id="f-admin" title="Admin panel"></iframe>
+  <iframe id="f-pm" title="Project manager"></iframe>
+  <iframe id="f-portal" title="Client portal"></iframe>
+  <aside id="script" aria-label="Demo script">
+    <button class="x" id="xScript" aria-label="Close">×</button>
+    <h2>A 3-minute demo story</h2>
+    <p>Use <b>Admin ⇄ Client</b> view so the client sees changes land live.</p>
+    <ol>
+      <li><b>Admin:</b> Designs → Mehta Residence → Kitchen → <i>Upload version</i>, then <i>Send to client</i>.</li>
+      <li><b>Client Portal:</b> Designs → Kitchen now says “Awaiting approval”. Tap <i>Request Changes</i> and add a comment.</li>
+      <li><b>Admin:</b> the Kitchen turns to “Revision” and the bell lights up. Send a new version again.</li>
+      <li><b>Client Portal:</b> <i>Approve Design</i>. Admin and Project Manager both show Approved.</li>
+      <li><b>Client Portal:</b> Changes → <i>New Request</i> (e.g. “Extra shelf in study”, ₹8,000).</li>
+      <li><b>Admin:</b> Site → Change requests → <i>Approve</i>. The portal shows it Approved, the budget goes up, and a draft invoice appears under Payments.</li>
+      <li><b>Project Manager:</b> mark a site task Done. Progress rises in Admin and in the portal.</li>
+    </ol>
+    <p style="margin-top:12px">Use <b>Reset</b> before each demo for clean data.</p>
+  </aside>
+</main>
+<script>
+(function(){
+  var stage=document.getElementById('stage'),F={admin:'interorproject.html',pm:'project-manager.html',portal:'client-portal.html'},
+      fr={admin:document.getElementById('f-admin'),pm:document.getElementById('f-pm'),portal:document.getElementById('f-portal')},
+      who=document.getElementById('who'),scr=document.getElementById('script');
+  if(location.protocol==='file:')document.getElementById('banner').style.display='block';
+
+  /* Load Admin first: it creates the shared store. Then the other two read it. */
+  fr.admin.addEventListener('load',function once(){
+    fr.admin.removeEventListener('load',once);
+    fr.pm.src=F.pm; fr.portal.src=F.portal;
+  });
+  fr.portal.addEventListener('load',fillWho);
+  fr.admin.src=F.admin;
+
+  function setLayout(l){
+    stage.dataset.l=l;
+    document.querySelectorAll('#nav button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.l===l))});
+    try{sessionStorage.setItem('demo.layout',l)}catch(e){}
+  }
+  document.getElementById('nav').addEventListener('click',function(e){var b=e.target.closest('button[data-l]');if(b)setLayout(b.dataset.l)});
+  try{var s=sessionStorage.getItem('demo.layout');if(s&&(innerWidth>900||!/split|triple/.test(s)))setLayout(s)}catch(e){}
+  if(innerWidth<=900&&/split|triple/.test(stage.dataset.l))setLayout('admin');
+
+  /* "Viewing as" client for the portal */
+  function fillWho(){
+    try{
+      var w=fr.portal.contentWindow,I=w.IPCS; if(!I)return;
+      var list=I.client.clients(),cur=I.client.current();
+      who.innerHTML=list.map(function(c){return '<option value="'+c.id+'"'+(c.id===cur?' selected':'')+'>Portal: '+c.name.replace(/</g,'&lt;')+'</option>'}).join('');
+    }catch(e){}
+  }
+  who.addEventListener('change',function(){
+    try{fr.portal.contentWindow.IPCS.client.select(who.value);fr.portal.contentWindow.location.reload()}catch(e){}
+  });
+
+  document.getElementById('btnScript').onclick=function(){scr.classList.toggle('on')};
+  document.getElementById('xScript').onclick=function(){scr.classList.remove('on')};
+
+  document.getElementById('btnReset').onclick=function(){
+    if(!confirm('Reset all demo data back to the original sample data?'))return;
+    try{Object.keys(localStorage).filter(function(k){return /^(ipcs\.|pmp\.|hearth)/.test(k)}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}
+    location.reload();
+  };
+})();
+</script>
+</body>
+</html>

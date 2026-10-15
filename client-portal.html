@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hearth Studio · Client Portal (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   Tokens
+   ========================================================= */
+:root{
+  --bg:#F7F5F0; --card:#fff; --line:#E7E2D8; --ink:#2A2A28; --muted:#6B675F;
+  --sage:#5C7460; --sage-d:#4A6050; --sage-l:#E7EDE4;
+  --beige:#EBE2D0; --beige-l:#F3EEE3;
+  --amber:#8A5E24; --amber-l:#F6EBD6; --rose:#9A4C3A; --rose-l:#F7E4DE;
+  --r:16px; --r-sm:12px;
+  --shadow:0 1px 2px rgba(42,42,40,.04),0 10px 28px -16px rgba(42,42,40,.14);
+  --font:'DM Sans',Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --serif:'Fraunces','Iowan Old Style',Georgia,serif; --sbw:220px; --hh:64px; --pad:clamp(16px,3vw,40px);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--font);overflow-x:clip}
+body.lock{overflow:hidden}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,p,dl,dd,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:12px;top:-60px;background:#fff;padding:10px 14px;border-radius:10px;z-index:100;border:1px solid var(--line)}
+.skip:focus{top:12px}
+.muted{color:var(--muted)} .small{font-size:13.5px}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* =========================================================
+   Layout shell
+   ========================================================= */
+.app{display:grid;grid-template-columns:var(--sbw) minmax(0,1fr);min-height:100dvh;transition:grid-template-columns .25s ease}
+.col{min-width:0}
+.side{position:sticky;top:0;height:100dvh;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px;padding:16px 12px;z-index:60;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:12px;padding:6px 8px 10px;min-height:48px}
+.mark{width:34px;height:34px;border-radius:11px;background:var(--sage);color:#fff;display:grid;place-items:center;font-weight:600;flex:none}
+.brand .lbl{font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.drawer-x{display:none;margin-left:auto}
+#nav{display:grid;gap:4px}
+.nav-item{position:relative;display:flex;align-items:center;gap:14px;min-height:46px;padding:0 14px;border-radius:12px;color:#4d4a43;text-decoration:none;font-weight:500;font-size:15px;transition:background .2s,color .2s}
+.nav-item:hover{background:var(--beige-l)}
+.nav-item[aria-current=page]{background:var(--sage-l);color:var(--sage-d)}
+.badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--sage);color:#fff;font-size:11.5px;font-weight:600;display:grid;place-items:center}
+.badge[hidden]{display:none}
+.side-foot{margin-top:auto;display:grid;gap:10px}
+.sb-toggle{display:flex;align-items:center;gap:14px;min-height:44px;padding:0 14px;border:0;background:none;border-radius:12px;color:var(--muted);font-size:14px}
+.sb-toggle:hover{background:var(--beige-l)}
+.sb-toggle .ic{transition:transform .25s}
+.demo-note{font-size:12.5px;color:var(--muted);padding:0 14px}
+.scrim{position:fixed;inset:0;background:rgba(35,33,28,.45);z-index:55}
+.scrim[hidden]{display:none}
+
+@media(min-width:768px){
+  .app.collapsed{--sbw:76px}
+  .collapsed .lbl{display:none}
+  .collapsed .nav-item,.collapsed .sb-toggle{justify-content:center;padding:0}
+  .collapsed .brand{justify-content:center;padding:6px 0 10px}
+  .collapsed .badge{position:absolute;top:5px;right:9px;min-width:16px;height:16px;font-size:10px;padding:0 4px}
+  .collapsed .sb-toggle .ic{transform:rotate(180deg)}
+}
+@media(max-width:767px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;top:0;width:min(290px,86vw);transform:translateX(-104%);transition:transform .28s ease;box-shadow:0 0 50px rgba(0,0,0,.2)}
+  .side.open{transform:none}
+  .drawer-x{display:grid}
+  .sb-toggle{display:none}
+}
+
+/* Header */
+.top{position:sticky;top:0;z-index:40;height:var(--hh);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 var(--pad);background:rgba(247,245,240,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.top-l,.top-r{display:flex;align-items:center;gap:10px;min-width:0}
+.crumb{font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu-btn{display:none}
+@media(max-width:767px){.menu-btn{display:grid}}
+.demo-chip{font-size:12px;color:var(--amber);background:var(--amber-l);padding:4px 10px;border-radius:99px;font-weight:500;white-space:nowrap}
+@media(max-width:520px){.demo-chip{display:none}}
+.icon-btn{position:relative;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:#fff;transition:background .2s}
+.icon-btn:hover{background:var(--beige-l)}
+.dot-badge{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--sage);color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center;border:2px solid var(--bg)}
+.dot-badge[hidden]{display:none}
+.avatar{width:44px;height:44px;border-radius:50%;border:0;background:var(--beige);font-weight:600;color:#5b4f3a;font-size:14px}
+.avatar:hover{background:#e2d6bf}
+.pop-wrap{position:relative}
+.pop{position:absolute;right:0;top:calc(100% + 10px);width:min(380px,calc(100vw - 24px));background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px -18px rgba(40,36,28,.32);padding:8px;z-index:70;max-height:min(70dvh,560px);overflow:auto}
+.pop[hidden]{display:none}
+@media(max-width:600px){.pop{position:fixed;left:12px;right:12px;top:calc(var(--hh) + 4px);width:auto}}
+.pop-h{display:flex;justify-content:space-between;align-items:center;padding:8px 10px 6px;gap:8px}
+.pop-h strong{font-weight:500}
+.link-btn{border:0;background:none;color:var(--sage-d);font-size:13.5px;font-weight:500;padding:8px;border-radius:8px}
+.link-btn:hover{background:var(--sage-l)}
+.nitem{display:flex;gap:12px;width:100%;text-align:left;padding:12px;border:0;background:none;border-radius:12px}
+.nitem:hover{background:var(--beige-l)}
+.nitem .ud{width:8px;height:8px;border-radius:50%;margin-top:8px;flex:none;background:transparent}
+.nitem.unread .ud{background:var(--sage)}
+.nitem strong{display:block;font-weight:500;font-size:15px}
+.nitem small{display:block;color:var(--muted);font-size:13px}
+.prof{padding:10px}
+.prof-top{display:flex;gap:12px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.prof-top .avatar{flex:none}
+.kv{display:grid;gap:10px;margin:12px 0}
+.kv div{display:flex;justify-content:space-between;gap:16px;font-size:14.5px}
+.kv dt{color:var(--muted)} .kv dd{text-align:right;overflow-wrap:anywhere}
+
+/* Main */
+.main{padding:8px var(--pad) 56px;max-width:1240px;margin:0 auto;width:100%;outline:none}
+.page-head{margin:8px 0 26px}
+.page-head h1{font-size:clamp(27px,4.4vw,42px);font-weight:500;letter-spacing:-.025em;line-height:1.12;outline:none}
+.sub{color:var(--muted);margin-top:8px}
+.sec{font-size:20px;font-weight:500;margin:38px 0 14px;letter-spacing:-.01em}
+.eyebrow{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:14px}
+.demo-foot{margin-top:48px;text-align:center;color:var(--muted);font-size:13px}
+
+/* =========================================================
+   Primitives
+   ========================================================= */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:clamp(16px,2.4vw,24px);box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 22px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:500;font-size:15px;transition:background .2s,border-color .2s,transform .1s;text-decoration:none}
+.btn:hover{border-color:#d3cbb9;background:var(--beige-l)}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--sage);border-color:var(--sage);color:#fff}
+.btn.primary:hover{background:var(--sage-d);border-color:var(--sage-d)}
+.btn.danger{color:var(--rose);border-color:#e6c9c0}
+.btn.danger:hover{background:var(--rose-l)}
+.btn.sm{min-height:40px;padding:0 18px;font-size:14px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:500;background:var(--beige-l);color:#5b5446;white-space:nowrap}
+.chip.ok{background:var(--sage-l);color:var(--sage-d)}
+.chip.warn{background:var(--amber-l);color:var(--amber)}
+.chip.bad{background:var(--rose-l);color:var(--rose)}
+.chip.glass{background:rgba(255,255,255,.9);color:var(--ink)}
+.bar{height:8px;border-radius:99px;background:var(--beige-l);overflow:hidden}
+.bar.tall{height:12px}
+.bar>i{display:block;height:100%;background:var(--sage);border-radius:inherit;animation:grow .9s ease both}
+@keyframes grow{from{width:0}}
+.okbox{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--sage-l);color:var(--sage-d);font-weight:500}
+.notice{padding:14px 16px;border-radius:12px;margin-bottom:16px;background:var(--amber-l);color:var(--amber);font-weight:500}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);border:1px dashed #d9d2c3;border-radius:14px}
+.list{display:grid;gap:10px}
+.li{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.li .l{min-width:0;flex:1 1 180px}
+.li .l strong{display:block;font-weight:500}
+.li .l small{color:var(--muted);font-size:13.5px}
+.li .r{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.amt{font-weight:500;font-variant-numeric:tabular-nums}
+
+/* Media + graceful image fallback */
+.media{position:relative;overflow:hidden;background:var(--sw,linear-gradient(135deg,var(--beige),var(--beige-l)))}
+.media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease;z-index:1}
+.media img.loaded{opacity:1}
+.media img.failed{display:none}
+.media[data-label]:not([style*="--sw"])::after{content:attr(data-label);position:absolute;inset:0;display:grid;place-items:center;padding:12px;text-align:center;color:rgba(70,62,48,.5);font-size:14px}
+.r43{aspect-ratio:4/3} .r169{aspect-ratio:16/10}
+
+/* =========================================================
+   Forms + dialogs
+   ========================================================= */
+.field{display:grid;gap:6px;margin-bottom:14px}
+.field label,.stack-form label{font-size:14px;font-weight:500}
+input,textarea,select{width:100%;min-height:46px;padding:10px 14px;border:1px solid #d9d2c3;border-radius:12px;background:#fff;font:inherit;font-size:16px;color:inherit}
+textarea{resize:vertical;min-height:96px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--sage);outline-offset:1px;border-color:var(--sage)}
+input[type=file]{padding:9px 12px;font-size:14px}
+.two-f{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:480px){.two-f{grid-template-columns:1fr 1fr}}
+.err{color:var(--rose);font-size:14px;font-weight:500;margin:4px 0 10px}
+.err[hidden]{display:none}
+.stack-form{display:grid;gap:8px}
+
+dialog{border:0;padding:0;border-radius:20px;background:#fff;color:var(--ink);width:min(560px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);box-shadow:0 30px 80px -20px rgba(30,28,24,.4);overflow:hidden}
+dialog::backdrop{background:rgba(35,33,28,.5);backdrop-filter:blur(2px)}
+dialog[open]{display:flex;flex-direction:column;animation:pop .22s ease}
+dialog.wide{width:min(1000px,calc(100vw - 24px))}
+#confirm{width:min(440px,calc(100vw - 24px))}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px 10px}
+.dlg-head h2{font-size:20px;font-weight:500;letter-spacing:-.01em}
+.dlg-body{padding:6px 20px 20px;overflow:auto;-webkit-overflow-scrolling:touch}
+.dlg-foot{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding:14px 20px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+@media(max-width:560px){
+  dialog{width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:92dvh}
+  dialog.wide{width:100%}
+  #confirm{width:100%}
+  .dlg-foot .btn{flex:1 1 100%}
+  .dlg-foot{flex-direction:column-reverse}
+}
+.toasts{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);display:grid;gap:8px;z-index:200;width:max-content;max-width:calc(100vw - 24px);pointer-events:none}
+.toast{background:#2A2A28;color:#fff;padding:12px 20px;border-radius:999px;font-size:14.5px;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:pop .25s ease;text-align:center}
+.toast.bad{background:var(--rose)}
+.toast.out{opacity:0;transition:opacity .3s}
+
+/* Lightbox */
+dialog.lb{width:min(1100px,calc(100vw - 24px));background:#1d1c19;color:#fff;border-radius:18px}
+.lb .media{background:#1d1c19;border-radius:0}
+.lb .media img{object-fit:contain}
+.lb .lbm{aspect-ratio:16/10;max-height:68dvh;width:100%}
+.lb .media[data-label]::after{color:rgba(255,255,255,.55)}
+.lb-x{position:absolute;right:12px;top:12px;z-index:5;background:rgba(255,255,255,.92)}
+.lb-cap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px calc(16px + env(safe-area-inset-bottom))}
+.lb-cap strong{display:block;font-weight:500}
+.lb-cap span{color:#cfcabd;font-size:14px}
+.lb-nav{display:flex;gap:8px}
+.lb-nav .icon-btn{background:#fff}
+@media(max-width:560px){dialog.lb{border-radius:18px 18px 0 0}}
+
+/* =========================================================
+   Home
+   ========================================================= */
+.home{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.hero{position:relative;border-radius:var(--r);overflow:hidden;min-height:300px;color:#fff;box-shadow:var(--shadow)}
+.hero .media{position:absolute;inset:0}
+.hero::after{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.12),transparent 35%,rgba(22,19,14,.6));pointer-events:none}
+.hero-top,.hero-bot{position:absolute;left:20px;right:20px;z-index:3}
+.hero-top{top:18px}.hero-bot{bottom:18px}
+.hero-bot strong{display:block;font-size:clamp(20px,3vw,28px);font-weight:500;letter-spacing:-.01em}
+.loc{display:flex;align-items:center;gap:6px;font-size:14px;opacity:.95}
+.prog{display:flex;align-items:center;gap:22px}
+.ring{position:relative;width:124px;height:124px;flex:none}
+.ring svg{width:100%;height:100%}
+.ring-n{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.1}
+.ring-n strong{font-size:28px;font-weight:500;letter-spacing:-.02em}
+.ring-n span{font-size:12px;color:var(--muted)}
+.prog-info{display:grid;gap:2px;min-width:0}
+.prog-info .k{font-size:12.5px;color:var(--muted);margin-top:10px}
+.prog-info .k:first-child{margin-top:0}
+.prog-info strong{font-weight:500;font-size:18px}
+.acts{display:grid;gap:10px}
+.action{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:14px 16px;text-align:left;border:1px solid var(--line);border-radius:14px;background:#fff;transition:border-color .2s,background .2s}
+.action:hover{border-color:var(--sage);background:var(--sage-l)}
+.action .ai{width:40px;height:40px;border-radius:12px;background:var(--beige-l);display:grid;place-items:center;flex:none;color:var(--sage-d)}
+.action .tx{min-width:0}
+.action strong{display:block;font-weight:500}
+.action small{color:var(--muted);font-size:13.5px}
+.action>.ic:last-child{margin-left:auto;color:var(--muted)}
+.upd{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);align-items:center}
+.upd-thumb{display:block;width:100%;padding:0;border:0;border-radius:14px;overflow:hidden;background:none}
+.upd-thumb .media{aspect-ratio:16/10;border-radius:14px;transition:transform .3s}
+.upd-thumb:hover .media{transform:scale(1.01)}
+.upd h3{font-size:19px;font-weight:500;margin:4px 0 6px}
+@media(min-width:700px){
+  .home{grid-template-columns:1fr 1fr}
+  .hero{grid-column:1/-1;min-height:380px}
+  .upd{grid-column:1/-1;grid-template-columns:minmax(220px,300px) 1fr}
+}
+@media(min-width:1024px){
+  .home{grid-template-columns:1.4fr 1fr}
+  .hero{grid-column:1;grid-row:span 2;min-height:470px}
+}
+@media(max-width:380px){.prog{flex-direction:column;align-items:flex-start}}
+
+/* =========================================================
+   Designs
+   ========================================================= */
+.rooms{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:640px){.rooms{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}
+.room{display:block;width:100%;text-align:left;padding:0;border:1px solid var(--line);background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease}
+.room:hover{transform:translateY(-3px);box-shadow:0 18px 40px -20px rgba(42,42,40,.25)}
+.room .media{border-radius:0}
+.room .meta{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;flex-wrap:wrap}
+.room .meta strong{display:block;font-weight:500;font-size:18px}
+.room .meta small{color:var(--muted)}
+.dd{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:820px){.dd{grid-template-columns:1.25fr 1fr;gap:28px}}
+.dd .media{border-radius:14px}
+.dd-side{display:grid;gap:18px;align-content:start;min-width:0}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg-b{min-height:44px;min-width:64px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.seg-b[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.seg-b i{width:8px;height:8px;border-radius:50%;background:#c9c2b2}
+.seg-b i.ok{background:var(--sage)} .seg-b i.warn{background:#c9953f} .seg-b i.bad{background:#c0705c}
+.note{background:var(--beige-l);border-radius:12px;padding:14px 16px}
+.note .k{font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px}
+.hist{display:grid;gap:8px;font-size:14px}
+.hist li{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.hist .cm{display:block;color:var(--muted);margin-top:2px}
+
+/* =========================================================
+   Materials
+   ========================================================= */
+.mats{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr))}
+.mat{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.mat .media{aspect-ratio:4/3;border-radius:0}
+.mat-b{padding:16px 18px 18px;display:grid;gap:10px;flex:1;align-content:start}
+.mat-b h3{font-size:18px;font-weight:500}
+.mat-b .spec{color:var(--muted);font-size:14.5px}
+.mat-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.price{font-weight:500}
+.mat-b .row{margin-top:auto;padding-top:6px}
+.mat-b .row .btn{flex:1 1 auto}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;padding:10px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.opt:hover{background:var(--beige-l)}
+.opt.on{border-color:var(--sage);background:var(--sage-l)}
+.opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;min-height:0;cursor:pointer}
+.opt:focus-within{outline:2px solid var(--sage);outline-offset:2px}
+.opt .media{width:68px;height:68px;border-radius:12px;flex:none}
+.opt strong{display:block;font-weight:500}
+.opt small{color:var(--muted);font-size:13.5px}
+.opt.dis{cursor:default;opacity:.85}
+
+/* =========================================================
+   Progress
+   ========================================================= */
+.timeline{display:grid}
+.tl{position:relative;display:flex;gap:14px;padding-bottom:24px}
+.tl:last-child{padding-bottom:0}
+.tl::before{content:'';position:absolute;left:13px;top:30px;bottom:2px;width:2px;background:var(--line)}
+.tl:last-child::before{display:none}
+.tl.done::before{background:var(--sage)}
+.dot{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);background:#fff;z-index:1}
+.dot .ic{width:15px;height:15px;stroke-width:2.4}
+.tl.done .dot{background:var(--sage);border-color:var(--sage);color:#fff}
+.tl.current .dot{border-color:var(--sage);box-shadow:0 0 0 5px var(--sage-l)}
+.tl.current .dot::after{content:'';width:10px;height:10px;border-radius:50%;background:var(--sage)}
+.tl strong{display:block;font-weight:500;overflow-wrap:anywhere}
+.tl small{color:var(--muted);font-size:13px}
+.tl.upcoming strong{color:var(--muted)}
+@media(min-width:768px){
+  .timeline{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .tl{flex-direction:column;gap:12px;padding:0 6px 0 0}
+  .tl::before{left:36px;right:8px;top:13px;bottom:auto;width:auto;height:2px}
+}
+.grid2{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);margin-top:16px}
+@media(min-width:900px){.grid2{grid-template-columns:1fr 1fr}}
+.row-b{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.row-b strong{font-size:28px;font-weight:500;letter-spacing:-.02em}
+.rooms-l{display:grid;gap:14px;margin-top:20px}
+.rl{display:grid;grid-template-columns:minmax(88px,130px) minmax(0,1fr) 42px;align-items:center;gap:12px;font-size:14.5px}
+.rl .pct{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.ms h3{font-size:22px;font-weight:500;margin:4px 0 6px;letter-spacing:-.01em}
+.ms .cal{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.photos{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:700px){.photos{grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr))}}
+.photo{display:block;width:100%;text-align:left;padding:0;border:1px solid var(--line);background:#fff;border-radius:14px;overflow:hidden;transition:transform .25s}
+.photo:hover{transform:translateY(-2px)}
+.photo .media{border-radius:0}
+.photo .pc{display:block;padding:10px 12px 12px}
+.photo .pc strong{display:block;font-weight:500;font-size:14px;line-height:1.35}
+.photo .pc small{color:var(--muted);font-size:12.5px}
+
+/* =========================================================
+   Budget
+   ========================================================= */
+.sum{display:grid;gap:14px}
+.sum div{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.sum dt{color:var(--muted)}
+.sum dd{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sum .tot{padding-top:14px;border-top:1px solid var(--line)}
+.sum .tot dt{color:var(--ink);font-weight:500}
+.sum .tot dd{font-size:clamp(24px,4vw,32px);letter-spacing:-.02em}
+.two{display:grid;gap:16px;grid-template-columns:1fr 1fr;margin-bottom:18px}
+@media(max-width:479px){.two{grid-template-columns:1fr}}
+.two .k{display:block;color:var(--muted);font-size:13.5px}
+.big{display:block;font-size:clamp(22px,4vw,28px);font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.bar-lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px}
+.foot-note{margin-top:22px;color:var(--muted);font-size:13.5px}
+.ficon{width:40px;height:40px;border-radius:12px;background:var(--beige-l);display:grid;place-items:center;color:var(--sage-d);flex:none}
+.li.inv{justify-content:flex-start;flex-wrap:nowrap}
+.li.inv .r{margin-left:auto}
+.docv{display:grid;gap:12px}
+
+/* =========================================================
+   Changes
+   ========================================================= */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.toolbar .sumline{display:grid}
+.toolbar .sumline strong{font-size:22px;font-weight:500}
+@media(max-width:560px){.toolbar .btn{width:100%}}
+.crs{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr))}
+.cr{display:grid;gap:12px;align-content:start}
+.cr h3{font-size:18px;font-weight:500;line-height:1.3}
+.cr .top-r2{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.cr .desc{color:var(--muted);font-size:14.5px}
+.meta-r{display:flex;gap:8px;flex-wrap:wrap}
+.meta-r .chip{background:var(--beige-l)}
+.cr .hist{padding-top:12px;border-top:1px solid var(--line);color:var(--muted)}
+.cr .row .btn{flex:1 1 auto}
+
+/* =========================================================
+   Handover
+   ========================================================= */
+.hv{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.hv{grid-template-columns:1.2fr 1fr;align-items:start}}
+.chk{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.chk:last-child{border-bottom:0}
+.tick{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:#fff}
+.tick .ic{width:15px;height:15px;stroke-width:2.6}
+.chk.done .tick{background:var(--sage);border-color:var(--sage)}
+.chk .tx{flex:1;min-width:0}
+.chk strong{display:block;font-weight:500}
+.chk small{color:var(--muted);font-size:13.5px}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== Studio upgrade: Home, Budget, Handover ===== */
+.page-head h1,.sec,.hero-bot strong,.stat strong,.fig strong,.pc h3,.rc-b strong{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
+.page-head .sub{max-width:60ch;color:var(--muted);margin-top:8px}
+.sec.first{margin-top:12px}
+.hm{display:grid;gap:12px}
+.hm .hero{min-height:clamp(320px,46vw,460px)}
+.hero-bot .dates{display:block;margin-top:6px;font-size:14px;opacity:.92}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.stat,.fig{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat .k,.fig .k{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.stat strong{font-size:clamp(21px,2.4vw,26px);line-height:1.2}
+.stat small,.fig small{color:var(--muted);font-size:13px}
+.stat .bar{margin:6px 0 2px}
+.pcs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.pc{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.pc .media{border-radius:0}
+.pc-b{display:grid;gap:8px;padding:16px 18px 18px;justify-items:start}
+.pc h3{font-size:21px}
+.pc .btn{margin-top:6px}
+.rcs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.rc{display:block;text-align:left;padding:0;background:#fff;border:1px solid var(--line);border-top:4px solid var(--line);border-radius:var(--r);overflow:hidden;transition:transform .2s,box-shadow .2s}
+.rc:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.rc.ok{border-top-color:var(--sage)}.rc.aw{border-top-color:var(--amber)}.rc.ip{border-top-color:#c9bfa8}
+.rc .media{border-radius:0}
+.rc-b{display:grid;gap:8px;padding:14px 16px 16px;justify-items:start}
+.rc-b strong{font-size:19px}
+.rc-cta{display:inline-flex;align-items:center;gap:4px;color:var(--sage-d);font-weight:500;font-size:14px}
+.tl2{display:grid;gap:0}
+.tl2 li{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.tl2 li:last-child{border:0}
+.tl2 i{width:9px;height:9px;border-radius:50%;background:var(--sage);margin-top:7px}
+.tl2 small{display:block;color:var(--muted);font-size:13.5px}
+.tl2 time{color:var(--muted);font-size:13px;white-space:nowrap}
+.pgc{display:grid;gap:18px}
+.pgc-h{display:flex;flex-wrap:wrap;gap:20px 44px;align-items:flex-end;justify-content:space-between}
+.pgc-m{display:flex;flex-wrap:wrap;gap:20px 44px}
+.pgc .k{display:block;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pgc strong{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(20px,2.3vw,24px);line-height:1.2}
+.pgc strong.big{font-size:clamp(42px,6vw,58px);letter-spacing:-.02em;line-height:1}
+.pgc small{color:var(--muted);font-size:13px}
+.pc.need{border-top:3px solid var(--amber)}
+.pc-eb{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pc-meta{font-size:14px;font-weight:500}
+.sec .chip{vertical-align:middle;margin-left:10px}
+.rp{display:grid;grid-template-columns:minmax(104px,170px) 1fr 46px;gap:14px;align-items:center;padding:10px 0}
+.rp strong{text-align:right;font-weight:500}
+.duo{display:grid;gap:12px;margin-top:12px}
+@media(min-width:900px){.duo{grid-template-columns:1fr 1fr}}
+.ms li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.ms li:last-child{border:0}
+.ms small{display:block;color:var(--muted);font-size:13.5px}
+.banner{display:flex;gap:12px;align-items:flex-start;background:var(--amber-l);color:#5e4219;border-radius:var(--r-sm);padding:12px 16px;margin:-8px 0 20px}
+.figs{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.fig strong{font-size:clamp(22px,3vw,30px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fig.key{background:var(--sage-l);border-color:#cdd9c8}
+.fig.pend{border-style:dashed;background:transparent}
+.stack{height:16px;border-radius:99px;background:var(--beige);overflow:hidden}
+.stack i{display:block;height:100%;background:var(--sage)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:10px;font-size:13.5px;color:var(--muted)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.sw1{background:var(--sage)}.sw2{background:var(--beige)}
+.hv .chk small{display:block}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+.cust{margin-top:20px}.cust-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.cust-h .eyebrow{margin:0}.cust .row{display:flex;gap:8px;flex-wrap:wrap}.cust .li strong{overflow-wrap:anywhere}
+@media(max-width:560px){.tl2 li{grid-template-columns:14px 1fr}.tl2 time{grid-column:2}}
+</style>
+</head>
+<body>
+
+<!-- Inline icon sprite (Lucide-style, no dependencies) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2l10 5-10 5L2 7z"/><path d="M2 12l10 5 10-5"/><path d="M2 17l10 5 10-5"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20"/><path d="M16 15h2"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2"/><path d="M17 6l3 3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 003.4 0"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<a class="skip" href="#view">Skip to content</a>
+
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Main navigation">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">H</span>
+      <span class="lbl">Hearth Studio</span>
+      <button class="icon-btn drawer-x" data-a="drawer-close" aria-label="Close menu"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <nav id="nav" aria-label="Sections"></nav>
+    <div class="side-foot">
+      <button class="sb-toggle" data-a="sb" aria-label="Collapse sidebar" aria-expanded="true"><svg class="ic" aria-hidden="true"><use href="#i-chevl"/></svg><span class="lbl">Collapse</span></button>
+      <p class="demo-note lbl">Demo prototype · sample data</p>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" data-a="drawer-close" hidden></div>
+
+  <div class="col">
+    <header class="top">
+      <div class="top-l">
+        <button class="icon-btn menu-btn" data-a="drawer" aria-label="Open menu" aria-expanded="false" aria-controls="side"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
+        <span class="crumb" id="crumb">Home</span>
+      </div>
+      <div class="top-r">
+        <span class="demo-chip">Demo · sample data</span>
+        <div class="pop-wrap">
+          <button class="icon-btn" data-a="pop" data-p="notif" aria-label="Notifications" aria-expanded="false" aria-controls="popNotif">
+            <svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg><span class="dot-badge" id="bellCount" hidden>0</span>
+          </button>
+          <div class="pop" id="popNotif" role="region" aria-label="Notifications" hidden></div>
+        </div>
+        <div class="pop-wrap">
+          <button class="avatar" id="avatar" data-a="pop" data-p="profile" aria-label="Profile menu" aria-expanded="false" aria-controls="popProfile">RS</button>
+          <div class="pop" id="popProfile" role="region" aria-label="Profile" hidden></div>
+        </div>
+      </div>
+    </header>
+    <main class="main" id="view" tabindex="-1"></main>
+  </div>
+</div>
+
+<dialog id="modal"></dialog>
+<dialog id="confirm" aria-labelledby="cTitle"></dialog>
+<dialog id="lightbox" class="lb" aria-label="Photo preview"></dialog>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<script src="ipcs-sync.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   1. Utilities
+   ========================================================= */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = n => String(n).padStart(2, '0');
+const today = () => { const n = new Date(); return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`; };
+const fmtDate = (iso, short) => {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return '';
+  return d.toLocaleDateString('en-GB', Object.assign({ day: 'numeric', month: 'short' }, short ? {} : { year: 'numeric' }));
+};
+// Indian numbering: 18,07,500
+const inr = n => {
+  n = Math.round(Number(n) || 0);
+  const neg = n < 0, s = String(Math.abs(n));
+  const last = s.slice(-3);
+  let rest = s.slice(0, -3);
+  if (rest) rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return (neg ? '-' : '') + '₹' + (rest ? rest + ',' + last : last);
+};
+const ic = (name, cls = '') => `<svg class="ic ${cls}" aria-hidden="true" focusable="false"><use href="#${name}"/></svg>`;
+const imgUrl = (id, w) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=70`;
+// Media block: gradient/label fallback sits behind the <img>; a failed image just hides itself.
+const media = (id, label, w = 900, cls = '', sw = '') =>
+  `<div class="media ${cls}" data-label="${esc(label)}"${sw ? ` style="--sw:${esc(sw)}"` : ''}>` +
+  (id ? `<img src="${imgUrl(id, w)}" alt="${esc(label)}" loading="lazy" decoding="async">` : '') + `</div>`;
+const head = (title, sub) => `<div class="page-head"><h1 tabindex="-1">${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>`;
+const TONE = { Approved:'ok', Paid:'ok', Completed:'ok', Ordered:'ok', Delivered:'ok', Selected:'', Done:'ok', 'Awaiting approval':'warn', Pending:'warn', 'Under review':'warn', 'Proposal sent':'warn', Declined:'bad', 'Due soon':'warn', 'Revision requested':'bad', Rejected:'bad' };
+const chip = (s, label) => `<span class="chip ${TONE[s] || ''}">${esc(label || s)}</span>`;
+
+/* =========================================================
+   2. Demo data: single source of truth (all figures are SAMPLE records)
+   ========================================================= */
+const SEED = {
+  v: 2,
+  profile: { name:'Rahul Sharma', initials:'RS', project:'3BHK Apartment', location:'Hyderabad',
+    email:'rahul.sharma@example.com', phone:'+91 90000 00000',
+    designer:'Ananya Rao', designerRole:'Lead designer', studioPhone:'+91 90000 00001', studioEmail:'studio@example.com' },
+  hero: 'photo-1618221195710-dd6b41faaea6',
+  stages: ['Design','Approvals','Procurement','Execution','Final Inspection','Handover'],
+  stage: 'Execution',
+  milestone: { title:'Kitchen installation', date:'2026-10-21' },
+  delay: null,                      // set to a short string to show a delay notice
+  budget: { original: 1800000 },
+  rooms: [
+    { room:'Living Room', pct:80 }, { room:'Kitchen', pct:55 }, { room:'Master Bedroom', pct:70 },
+    { room:'Bathrooms', pct:60 }, { room:'Other Rooms', pct:60 }
+  ],
+  designs: [
+    { id:'living', room:'Living Room', current:'V2', comments:[], versions:[
+      { v:'V1', img:'photo-1586023492125-27b2c045efd7', date:'2026-06-02', status:'Superseded', note:'First layout with a corner sofa.' },
+      { v:'V2', img:'photo-1600210492486-724fe5c67fb0', date:'2026-06-18', status:'Approved', decided:'2026-06-20', note:'Open seating, warm oak, soft linen tones.' } ] },
+    { id:'kitchen', room:'Kitchen', current:'V2', comments:[], versions:[
+      { v:'V1', img:'photo-1556909114-f6e7ad7d3136', date:'2026-08-20', status:'Superseded', note:'First layout with a central island.' },
+      { v:'V2', img:'photo-1556911220-bff31c812dba', date:'2026-10-11', status:'Awaiting approval', note:'Slimmer island, tall pantry, sage cabinets.' } ] },
+    { id:'bedroom', room:'Master Bedroom', current:'V1', comments:[], versions:[
+      { v:'V1', img:'photo-1616594039964-ae9021a400a0', date:'2026-06-10', status:'Approved', decided:'2026-06-15', note:'Padded headboard wall and full-height wardrobe.' } ] },
+    { id:'other', room:'Other Rooms', current:'V1', comments:[], versions:[
+      { v:'V1', img:'photo-1593696140826-c58b021acf8b', date:'2026-06-25', status:'Approved', decided:'2026-06-28', note:'Study nook and guest room, kept simple.' } ] }
+  ],
+  materials: [
+    { id:'countertop', name:'Quartz countertop', short:'countertop', selected:'q1', status:'Awaiting approval', options:[
+      { id:'q1', name:'Calacatta Ivory', spec:'20 mm · Matte', price:'₹310 / sq ft', swatch:'radial-gradient(120% 80% at 20% 10%,#fbf9f4,transparent 60%),linear-gradient(115deg,transparent 40%,rgba(150,145,135,.38) 41%,transparent 43%),linear-gradient(62deg,transparent 55%,rgba(150,145,135,.26) 56%,transparent 58%),linear-gradient(135deg,#f1ede4,#e0dacd)' },
+      { id:'q2', name:'Arctic Grey', spec:'20 mm · Matte', price:'₹275 / sq ft', swatch:'linear-gradient(120deg,transparent 48%,rgba(120,125,128,.3) 49%,transparent 51%),linear-gradient(135deg,#e7e8e8,#cdd1d2)' },
+      { id:'q3', name:'Warm Sand', spec:'20 mm · Honed', price:'₹290 / sq ft', swatch:'linear-gradient(100deg,transparent 52%,rgba(160,130,90,.25) 53%,transparent 55%),linear-gradient(135deg,#eadfc7,#d8c7a8)' } ] },
+    { id:'tiles', name:'Floor tiles', short:'floor tiles', selected:'t1', status:'Ordered', orderedDate:'2026-08-28', options:[
+      { id:'t1', name:'Soft Travertine', spec:'800 × 800 mm · Matte', price:'₹95 / sq ft', swatch:'linear-gradient(rgba(120,105,80,.28) 1px,transparent 1px) 0 0/50% 50%,linear-gradient(90deg,rgba(120,105,80,.28) 1px,transparent 1px) 0 0/50% 50%,linear-gradient(135deg,#e5dac6,#d6c8ad)' },
+      { id:'t2', name:'Ivory Matt', spec:'800 × 800 mm · Matte', price:'₹88 / sq ft', swatch:'linear-gradient(rgba(120,110,90,.25) 1px,transparent 1px) 0 0/50% 50%,linear-gradient(90deg,rgba(120,110,90,.25) 1px,transparent 1px) 0 0/50% 50%,linear-gradient(135deg,#f2ede1,#e6dfcf)' },
+      { id:'t3', name:'Greige Stone', spec:'800 × 800 mm · Matte', price:'₹92 / sq ft', swatch:'linear-gradient(rgba(90,85,75,.3) 1px,transparent 1px) 0 0/50% 50%,linear-gradient(90deg,rgba(90,85,75,.3) 1px,transparent 1px) 0 0/50% 50%,linear-gradient(135deg,#d3ccbf,#c3bbab)' } ] },
+    { id:'wood', name:'Wood finish', short:'wood finish', selected:'w1', status:'Approved', decided:'2026-07-14', options:[
+      { id:'w1', name:'Natural Oak', spec:'Veneer · Matte PU', swatch:'repeating-linear-gradient(92deg,rgba(90,60,30,.13) 0 2px,transparent 2px 9px),linear-gradient(135deg,#cfae78,#b58d55)' },
+      { id:'w2', name:'Walnut', spec:'Veneer · Matte PU', swatch:'repeating-linear-gradient(92deg,rgba(30,15,5,.18) 0 2px,transparent 2px 10px),linear-gradient(135deg,#7a5640,#5c3f2d)' },
+      { id:'w3', name:'Ash', spec:'Veneer · Matte PU', swatch:'repeating-linear-gradient(92deg,rgba(100,80,50,.1) 0 2px,transparent 2px 8px),linear-gradient(135deg,#dccaa6,#cdb68d)' } ] },
+    { id:'paint', name:'Wall paint', short:'wall paint', selected:'p1', status:'Approved', decided:'2026-07-14', options:[
+      { id:'p1', name:'Warm Linen', spec:'Matt emulsion · 2 coats', swatch:'linear-gradient(135deg,#efe6d6,#e6dac5)' },
+      { id:'p2', name:'Soft Sage', spec:'Matt emulsion · 2 coats', swatch:'linear-gradient(135deg,#d0dbca,#bfcdb8)' },
+      { id:'p3', name:'Chalk White', spec:'Matt emulsion · 2 coats', swatch:'linear-gradient(135deg,#f8f6f0,#efece3)' } ] },
+    { id:'cabinet', name:'Cabinet finish', short:'cabinet finish', selected:'c1', status:'Approved', decided:'2026-07-20', options:[
+      { id:'c1', name:'Matte Sage', spec:'Laminate · Anti-fingerprint', swatch:'linear-gradient(90deg,rgba(0,0,0,.07) 1px,transparent 1px) 0 0/33.33% 100%,linear-gradient(135deg,#9db09a,#889c86)' },
+      { id:'c2', name:'Oat Beige', spec:'Laminate · Anti-fingerprint', swatch:'linear-gradient(90deg,rgba(0,0,0,.06) 1px,transparent 1px) 0 0/33.33% 100%,linear-gradient(135deg,#ddd1ba,#cfc2a8)' },
+      { id:'c3', name:'Walnut Veneer', spec:'Veneer · Matte PU', swatch:'repeating-linear-gradient(92deg,rgba(30,15,5,.18) 0 2px,transparent 2px 10px),linear-gradient(135deg,#7a5640,#5c3f2d)' } ] }
+  ],
+  updates: [
+    { id:'u1', img:'photo-1503387762-592deb58ef4e', date:'2026-10-12', room:'Living Room', caption:'Living room flooring laid' },
+    { id:'u2', img:'photo-1504307651254-35680f356dfd', date:'2026-10-09', room:'Kitchen', caption:'Kitchen cabinet frames fitted' },
+    { id:'u3', img:'photo-1589939705384-5185137a7f0f', date:'2026-10-05', room:'Master Bedroom', caption:'Wardrobe framing in progress' },
+    { id:'u4', img:'photo-1581858726788-75bc0f6a952d', date:'2026-09-28', room:'Bathrooms', caption:'Waterproofing completed' },
+    { id:'u5', img:'photo-1541888946425-d81bb19240f5', date:'2026-09-20', room:'Living Room', caption:'False ceiling completed' }
+  ],
+  // amount:null = balance row, calculated so milestones always add up to the revised budget
+  payments: [
+    { id:'p1', label:'Booking advance',       amount:180000, paid:true,  date:'2026-05-12', no:'RCT-0101' },
+    { id:'p2', label:'Design sign-off',       amount:360000, paid:true,  date:'2026-06-20', no:'RCT-0102' },
+    { id:'p3', label:'Procurement',           amount:360000, paid:true,  date:'2026-08-05', no:'RCT-0103' },
+    { id:'p4', label:'Execution, phase 1',    amount:270000, paid:true,  date:'2026-09-18', no:'RCT-0104' },
+    { id:'p5', label:'Execution, completion', amount:300000, paid:false, date:'2026-10-30', tag:'Due soon', issued:true, no:'INV-0105' },
+    { id:'p6', label:'Handover balance',      amount:null,   paid:false, date:'2026-11-30', tag:'Upcoming', no:'INV-0106' }
+  ],
+  // estimate = client's own guess (never counted). proposal = studio's priced response. cost = accepted adjustment (+ extra, - credit), set only on acceptance.
+  changes: [
+    { id:'c1', title:'Under-sink pull-out storage', desc:'Add a pull-out storage unit below the kitchen sink.', estimate:7500, proposal:{ cost:7500, impact:'No delay', date:'2026-09-20' }, cost:7500, impact:'No delay', ref:'', status:'Approved',
+      history:[{ s:'Submitted', date:'2026-09-18' }, { s:'Studio proposal sent', date:'2026-09-20' }, { s:'Approved', date:'2026-09-22' }] },
+    { id:'c2', title:'Wall niche in living room', desc:'Recessed display niche beside the TV wall, with warm light.', estimate:10000, proposal:{ cost:12000, impact:'+2 days', date:'2026-10-12' }, cost:null, impact:'+2 days', ref:'niche-sketch.jpg', status:'Proposal sent',
+      history:[{ s:'Submitted', date:'2026-10-10' }, { s:'Studio proposal sent', date:'2026-10-12' }] },
+    { id:'c3', title:'Marble flooring in balcony', desc:'Replace balcony tiles with natural marble.', estimate:80000, proposal:{ cost:85000, impact:'1 week or more', date:'2026-08-28' }, cost:null, impact:'1 week or more', ref:'', status:'Declined',
+      history:[{ s:'Submitted', date:'2026-08-24' }, { s:'Studio proposal sent', date:'2026-08-28' }, { s:'Declined', date:'2026-08-30' }] },
+    { id:'c4', title:'Move TV point 6 inches', desc:'Shift the TV socket to match the final wall layout.', estimate:0, proposal:{ cost:0, impact:'No delay', date:'2026-07-31' }, cost:0, impact:'No delay', ref:'', status:'Completed',
+      history:[{ s:'Submitted', date:'2026-07-30' }, { s:'Studio proposal sent', date:'2026-07-31' }, { s:'Approved', date:'2026-08-01' }, { s:'Completed', date:'2026-09-02' }] }
+  ],
+  handover: { confirmed: null, items: [
+    { id:'inspection', label:'Final inspection',           done:false, client:true, note:'After execution' },
+    { id:'issues',     label:'Outstanding issues resolved', done:false, client:true, note:'Snag list not started' },
+    { id:'photos',     label:'Final photographs',          done:false, client:true, note:'After inspection' },
+    { id:'docs',       label:'Project documents',          done:true,  note:'Ready to view' },
+    { id:'warranty',   label:'Warranty documents',         done:false, optional:true, note:'Not supplied yet' },
+    { id:'confirm',    label:'Handover confirmation',      done:false, note:'When you are satisfied' }
+  ] },
+  docs: [],
+  notifications: [
+    { id:'n1', text:'New design submitted for approval', sub:'Kitchen · V2', date:'2026-10-12', read:false, go:'designs', design:'kitchen' },
+    { id:'n6', text:'Studio proposal ready for your decision', sub:'Wall niche · + ₹12,000 · +2 days', date:'2026-10-12', read:false, go:'changes' },
+    { id:'n2', text:'Material selection requested', sub:'Quartz countertop', date:'2026-10-11', read:false, go:'materials', mat:'countertop' },
+    { id:'n3', text:'Site progress updated', sub:'Living room flooring laid', date:'2026-10-12', read:false, go:'progress' },
+    { id:'n4', text:'Change request decision recorded', sub:'Under-sink storage · Approved', date:'2026-09-22', read:true, go:'changes' },
+    { id:'n5', text:'Payment milestone approaching', dyn:'pay:p5', date:'2026-10-13', read:false, go:'budget' }
+  ]
+};
+
+/* =========================================================
+   3. State + persistence (localStorage, with safe fallback)
+   ========================================================= */
+window.__PORTAL_SAMPLE = { materials: SEED.materials, updates: SEED.updates };
+const KEY = 'hearth-portal-demo-v2';
+function valid(d) {
+  try {
+    return !!(d && d.v === SEED.v &&
+      ['stages','rooms','designs','materials','updates','payments','changes','notifications'].every(k => Array.isArray(d[k])) &&
+      (!d.docs || Array.isArray(d.docs)) &&
+      d.designs.every(x => Array.isArray(x.versions) && x.versions.length && Array.isArray(x.comments)) &&
+      d.materials.every(m => Array.isArray(m.options) && m.options.length) &&
+      d.changes.every(c => Array.isArray(c.history)) &&
+      d.budget && typeof d.budget.original === 'number' &&
+      d.handover && Array.isArray(d.handover.items) && d.profile && d.milestone && typeof d.stage === 'string');
+  } catch (e) { return false; }
+}
+/* Shared data: when the Admin store (ipcs.demo.v2) exists, this portal shows the project assigned to the selected client and writes decisions back to it. */
+let LINK = null;
+function load() {
+  try { LINK = window.IPCS ? IPCS.client.open() : null; } catch (e) { LINK = null; console.error(e); }
+  if (LINK) return LINK.state;
+  try { const raw = localStorage.getItem(KEY); if (raw) { const d = JSON.parse(raw); if (valid(d)) return d; } } catch (e) {}
+  return clone(SEED);
+}
+let S = load();
+const save = () => { if (LINK) { try { IPCS.client.save(LINK, S); } catch (e) { console.error(e); } return; } try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+if (!LINK) save();
+const ui = { design: null, mat: null, lb: 0 };
+
+/* ---------- Derived values (never hardcoded elsewhere) ---------- */
+const getDesign = id => S.designs.find(d => d.id === id);
+const getMat = id => S.materials.find(m => m.id === id);
+const NOVER = { v: '', img: '', status: '', note: '' }, NOOPT = { id: '', name: '', spec: '', swatch: '' };
+const verOf = (d, v) => { const a = Array.isArray(d.versions) ? d.versions : []; return a.find(x => x.v === v) || a[a.length - 1] || NOVER; };
+const curV = d => verOf(d, d.current);
+const selOpt = m => { const a = Array.isArray(m.options) ? m.options : []; return a.find(o => o.id === m.selected) || a[0] || NOOPT; };
+// Only an accepted studio proposal with a numeric cost moves the budget; each request is counted once (one record, one cost).
+const accepted = () => S.changes.filter(c => (c.status === 'Approved' || c.status === 'Completed') && c.proposal && Number.isFinite(Number(c.cost)));
+const addCosts = () => accepted().reduce((a, c) => a + Math.max(0, Number(c.cost)), 0);
+const credits = () => accepted().reduce((a, c) => a + Math.max(0, -Number(c.cost)), 0);
+const approvedChanges = () => addCosts() - credits();
+const sgn = n => (n < 0 ? '− ' : '+ ') + inr(Math.abs(n));
+const revised = () => S.budget.original + addCosts() - credits();
+const payAmt = p => (p.tbc ? 'To be confirmed' : inr(p.amount));
+const payList = () => {
+  const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+  const fixed = S.payments.reduce((a, p) => a + (p.amount == null ? 0 : num(p.amount)), 0);
+  const bal = Math.max(0, revised() - fixed);
+  // The single balance row (first row with no fixed amount) takes the remainder; any further open rows stay unpriced instead of repeating it.
+  const bi = S.payments.findIndex(p => p.amount == null);
+  return S.payments.map((p, i) => p.amount == null ? Object.assign({}, p, i === bi ? { amount: bal } : { amount: 0, tbc: true }) : Object.assign({}, p, { amount: num(p.amount) }));
+};
+const paidTotal = () => payList().filter(p => p.paid === true).reduce((a, p) => a + p.amount, 0);
+const balanceDue = () => Math.max(0, revised() - paidTotal());
+const overall = () => typeof S.progress === 'number' ? S.progress : S.rooms.length ? Math.round(S.rooms.reduce((a, r) => a + r.pct, 0) / S.rooms.length) : 0;
+const sortedUpdates = () => [...S.updates].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+function pending() {
+  const a = [];
+  S.designs.forEach(d => { const c = curV(d); if (c.status === 'Awaiting approval') a.push({ k:'design', id:d.id, icon:'i-img', title:`Review ${d.room.toLowerCase()} design`, sub:`${c.v} · waiting for you` }); });
+  S.materials.forEach(m => { if (m.status === 'Awaiting approval') a.push({ k:'material', id:m.id, icon:'i-layers', title:`Approve ${m.short}`, sub:`${selOpt(m).name} · waiting for you` }); });
+  S.changes.forEach(c => { if (c.status === 'Proposal sent') a.push({ k:'change', id:c.id, icon:'i-edit', title:`Decide on: ${c.title}`, sub:'Studio proposal · waiting for you' }); });
+  return a;
+}
+const counts = () => ({
+  designs: S.designs.filter(d => curV(d).status === 'Awaiting approval').length,
+  materials: S.materials.filter(m => m.status === 'Awaiting approval').length,
+  changes: S.changes.filter(c => c.status === 'Proposal sent').length,
+  unread: S.notifications.filter(n => !n.read).length
+});
+
+/* =========================================================
+   4. Feedback helpers: toast, confirm, modal
+   ========================================================= */
+const sync = () => document.body.classList.toggle('lock', !!$('dialog[open]'));
+function toast(msg, type = '') {
+  $('#live').textContent = msg;
+  const host = [...document.querySelectorAll('dialog[open]')].pop() || document.body;
+  let box = host.querySelector(':scope > .toasts');
+  if (!box) { box = document.createElement('div'); box.className = 'toasts'; host.appendChild(box); }
+  const t = document.createElement('div');
+  t.className = 'toast ' + type; t.textContent = msg; box.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => { t.remove(); if (!box.children.length) box.remove(); }, 320); }, 3200);
+}
+function ask({ title, text, ok = 'Confirm', tone = '' }) {
+  return new Promise(res => {
+    const d = $('#confirm');
+    d.innerHTML = `<div class="dlg-head"><h2 id="cTitle">${esc(title)}</h2></div>
+      <div class="dlg-body"><p class="muted">${esc(text)}</p></div>
+      <div class="dlg-foot"><button class="btn" data-r="0">Cancel</button><button class="btn ${tone === 'danger' ? 'danger' : 'primary'}" data-r="1">${esc(ok)}</button></div>`;
+    d.onclick = e => { const b = e.target.closest('[data-r]'); if (b) { d.close(); res(b.dataset.r === '1'); } };
+    d.onclose = () => res(false);
+    d.showModal(); sync();
+  });
+}
+function setModal(title, body, { wide = false, foot = '' } = {}) {
+  const m = $('#modal');
+  const st = m.open ? ($('.dlg-body', m) || {}).scrollTop || 0 : 0;
+  m.className = wide ? 'wide' : '';
+  m.setAttribute('aria-labelledby', 'mTitle');
+  m.innerHTML = `<div class="dlg-head"><h2 id="mTitle">${title}</h2><button class="icon-btn" data-a="close" aria-label="Close">${ic('i-x')}</button></div>
+    <div class="dlg-body">${body}</div>${foot ? `<div class="dlg-foot">${foot}</div>` : ''}`;
+  if (!m.open) { m.showModal(); sync(); } else { $('.dlg-body', m).scrollTop = st; }
+}
+
+/* =========================================================
+   5. Views
+   ========================================================= */
+const banner = k => { const a = pending().filter(x => x.k === k); return a.length ? `<div class="banner" role="status">${ic('i-edit')}<span><strong>${a.length} awaiting your decision:</strong> ${a.map(x => esc(x.title)).join(' · ')}</span></div>` : ''; };
+/* ---------- Add / Delete / Delete all (only records the user added: flagged custom:true) ---------- */
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+const udocs = () => (Array.isArray(S.docs) ? S.docs.filter(Boolean) : []);
+const CK = {
+  room: { noun: 'room', plural: 'rooms', where: 'Designs', empty: 'No custom rooms yet. Add one to see it alongside your design previews.', locked: () => false,
+    list: () => S.designs.filter(x => x && x.custom), label: x => x.room, sub: x => 'Added room · ' + (curV(x).status || 'In progress'),
+    drop: ids => {
+      const removed = S.designs.filter(x => x && ids.includes(x.id)).map(x => x.room);
+      S.designs = S.designs.filter(x => !ids.includes(x.id));
+      if (Array.isArray(S.rooms)) S.rooms = S.rooms.filter(r => !(ids.includes(r.id) || (r.custom && removed.includes(r.room))));
+      if (ui.design && ids.includes(ui.design.id)) { ui.design = null; $('#modal').close(); }
+    },
+    form: `<div class="field"><label for="ad-n">Room name</label><input id="ad-n" name="n" maxlength="40" placeholder="e.g. Home office" required></div>
+      <div class="field"><label for="ad-d">Description (optional)</label><textarea id="ad-d" name="d" maxlength="200" placeholder="Style, purpose or ideas for this room"></textarea></div>`,
+    make(el) { const n = el.n.value.trim(), d = el.d.value.trim();
+      if (!n) return { err: 'Please enter a room name.' };
+      if (S.designs.some(x => x && String(x.room).toLowerCase() === n.toLowerCase())) return { err: 'A room with this name already exists.' };
+      return { v: { id: uid('r'), room: n, current: 'V1', comments: [], custom: true, versions: [{ v: 'V1', img: '', date: today(), status: 'In progress', note: d || 'Design brief to follow.' }] }, text: n }; },
+    editForm(x) {
+      return `<div class="field"><label for="ed-n">Room name</label><input id="ed-n" name="n" maxlength="40" value="${esc(x.room)}" required></div>
+        <div class="field"><label for="ed-d">Description (optional)</label><textarea id="ed-d" name="d" maxlength="200" placeholder="Style, purpose or ideas for this room">${esc((curV(x) && curV(x).note) || '')}</textarea></div>`;
+    },
+    update(x, el) {
+      const n = el.n.value.trim(), d = el.d.value.trim();
+      if (!n) return { err: 'Please enter a room name.' };
+      if (S.designs.some(o => o && o.id !== x.id && String(o.room).toLowerCase() === n.toLowerCase())) return { err: 'A room with this name already exists.' };
+      const oldRoom = x.room;
+      x.room = n;
+      const cv = curV(x);
+      if (cv) cv.note = d || 'Design brief to follow.';
+      if (Array.isArray(S.rooms)) {
+        const r = S.rooms.find(o => o.id === x.id || (o.custom && String(o.room).toLowerCase() === oldRoom.toLowerCase()));
+        if (r) r.room = n;
+      }
+      return { text: n };
+    },
+    push: v => {
+      S.designs.push(v);
+      if (Array.isArray(S.rooms) && !S.rooms.some(r => r.room.toLowerCase() === v.room.toLowerCase())) {
+        S.rooms.push({ id: v.id, room: v.room, pct: 0, custom: true });
+      }
+    }, go: 'designs' },
+  pay: { noun: 'payment milestone', plural: 'payment milestones', where: 'Budget', empty: 'No custom milestones. Added milestones are always unpaid until the studio records a payment.', locked: () => false,
+    list: () => S.payments.filter(x => x && x.custom && x.paid !== true), label: x => x.label, sub: x => `${inr(x.amount)} · due ${fmtDate(x.date)}`,
+    drop: ids => { S.payments = S.payments.filter(x => !ids.includes(x.id)); },
+    form: `<div class="field"><label for="ad-l">Milestone name</label><input id="ad-l" name="l" maxlength="50" placeholder="e.g. Lighting installation" required></div>
+      <div class="two-f"><div class="field"><label for="ad-a">Amount (₹)</label><input id="ad-a" name="a" type="number" inputmode="numeric" min="1" step="500" required></div>
+      <div class="field"><label for="ad-t">Due date</label><input id="ad-t" name="t" type="date" required></div></div>`,
+    make(el) { const l = el.l.value.trim(), a = Number(el.a.value), t = el.t.value;
+      const fixed = S.payments.reduce((x, p) => x + (p.amount == null ? 0 : Number(p.amount) || 0), 0), room = Math.max(0, revised() - fixed);
+      if (!l) return { err: 'Please enter a milestone name.' };
+      if (!Number.isFinite(a) || a <= 0) return { err: 'Enter an amount greater than 0.' };
+      if (a > room) return { err: `Amount exceeds the unscheduled balance of ${inr(room)}.` };
+      if (!t || !fmtDate(t)) return { err: 'Please choose a due date.' };
+      const n = S.payments.reduce((m, p) => Math.max(m, parseInt(String(p.no || '').replace(/\D/g, ''), 10) || 0), 0) + 1;
+      return { v: { id: uid('p'), label: l, amount: Math.round(a), paid: false, date: t, tag: 'Upcoming', no: 'INV-' + String(n).padStart(4, '0'), custom: true }, text: l }; },
+    editForm(x) {
+      return `<div class="field"><label for="ed-l">Milestone name</label><input id="ed-l" name="l" maxlength="50" value="${esc(x.label)}" required></div>
+        <div class="two-f"><div class="field"><label for="ed-a">Amount (₹)</label><input id="ed-a" name="a" type="number" inputmode="numeric" min="1" step="500" value="${x.amount || ''}" required></div>
+        <div class="field"><label for="ed-t">Due date</label><input id="ed-t" name="t" type="date" value="${x.date || ''}" required></div></div>`;
+    },
+    update(x, el) {
+      const l = el.l.value.trim(), a = Number(el.a.value), t = el.t.value;
+      const otherFixed = S.payments.reduce((acc, p) => acc + (p.id === x.id || p.amount == null ? 0 : Number(p.amount) || 0), 0);
+      const room = Math.max(0, revised() - otherFixed);
+      if (!l) return { err: 'Please enter a milestone name.' };
+      if (!Number.isFinite(a) || a <= 0) return { err: 'Enter an amount greater than 0.' };
+      if (a > room) return { err: `Amount exceeds the unscheduled balance of ${inr(room)}.` };
+      if (!t || !fmtDate(t)) return { err: 'Please choose a due date.' };
+      x.label = l;
+      x.amount = Math.round(a);
+      x.date = t;
+      S.payments.sort((a, b) => {
+        if (a.amount == null && b.amount != null) return 1;
+        if (b.amount == null && a.amount != null) return -1;
+        return String(a.date) < String(b.date) ? -1 : String(a.date) > String(b.date) ? 1 : 0;
+      });
+      return { text: l };
+    },
+    push: v => { S.payments.push(v); S.payments.sort((x, y) => (String(x.date) < String(y.date) ? -1 : String(x.date) > String(y.date) ? 1 : 0)); }, go: 'budget' },
+  doc: { noun: 'document', plural: 'documents', where: 'Handover', empty: 'No documents added yet.', locked: () => false,
+    list: () => udocs().filter(x => x && x.custom), label: x => x.title, sub: x => `${x.type || 'Document'} · added ${fmtDate(x.date)}`,
+    drop: ids => { S.docs = udocs().filter(x => !ids.includes(x.id)); },
+    form: `<div class="field"><label for="ad-t">Document title</label><input id="ad-t" name="t" maxlength="60" placeholder="e.g. Electrical layout" required></div>
+      <div class="field"><label for="ad-y">Type</label><select id="ad-y" name="y"><option>Drawing</option><option>Specification</option><option>Warranty</option><option>Invoice copy</option><option>Other</option></select></div>
+      <div class="field"><label for="ad-n">Note (optional)</label><input id="ad-n" name="n" maxlength="120"></div><p class="muted small">Demo entry only. No file is uploaded or stored.</p>`,
+    make(el) { const t = el.t.value.trim(); if (!t) return { err: 'Please enter a document title.' };
+      return { v: { id: uid('d'), title: t, type: el.y.value, note: el.n.value.trim(), date: today(), custom: true }, text: t }; },
+    editForm(x) {
+      const types = ['Drawing', 'Specification', 'Warranty', 'Invoice copy', 'Other'];
+      return `<div class="field"><label for="ed-t">Document title</label><input id="ed-t" name="t" maxlength="60" value="${esc(x.title)}" required></div>
+        <div class="field"><label for="ed-y">Type</label><select id="ed-y" name="y">${types.map(y => `<option${x.type === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>
+        <div class="field"><label for="ed-n">Note (optional)</label><input id="ed-n" name="n" maxlength="120" value="${esc(x.note || '')}"></div><p class="muted small">Demo entry only. No file is uploaded or stored.</p>`;
+    },
+    update(x, el) {
+      const t = el.t.value.trim(); if (!t) return { err: 'Please enter a document title.' };
+      x.title = t;
+      x.type = el.y.value;
+      x.note = el.n.value.trim();
+      return { text: t };
+    },
+    push: v => { S.docs = udocs().concat(v); }, go: 'handover' },
+  item: { noun: 'checklist item', plural: 'checklist items', where: 'Handover', empty: 'No custom checklist items yet.', locked: () => !!S.handover.confirmed,
+    list: () => S.handover.items.filter(x => x && x.custom), label: x => x.label, sub: x => (x.optional ? 'Optional' : 'Required') + (x.done ? ' · done' : ''),
+    drop: ids => { S.handover.items = S.handover.items.filter(x => !(x && ids.includes(x.id))); },
+    form: `<div class="field"><label for="ad-l">Checklist item</label><input id="ad-l" name="l" maxlength="60" placeholder="e.g. Collect spare keys" required></div>
+      <div class="field"><label for="ad-n">Short description (optional)</label><input id="ad-n" name="n" maxlength="100"></div>
+      <div class="field"><label for="ad-r">Type</label><select id="ad-r" name="r"><option value="req">Required (blocks confirmation until done)</option><option value="opt">Optional</option></select></div>`,
+    make(el) { const l = el.l.value.trim(); if (!l) return { err: 'Please enter a checklist item.' };
+      if (S.handover.items.some(x => x && String(x.label).toLowerCase() === l.toLowerCase())) return { err: 'This item already exists.' };
+      return { v: { id: uid('x'), label: l, done: false, client: true, optional: el.r.value === 'opt', note: el.n.value.trim() || 'Added by you', custom: true }, text: l }; },
+    editForm(x) {
+      return `<div class="field"><label for="ed-l">Checklist item</label><input id="ed-l" name="l" maxlength="60" value="${esc(x.label)}" required></div>
+        <div class="field"><label for="ed-n">Short description (optional)</label><input id="ed-n" name="n" maxlength="100" value="${esc(x.note || '')}"></div>
+        <div class="field"><label for="ed-r">Type</label><select id="ed-r" name="r"><option value="req"${!x.optional ? ' selected' : ''}>Required (blocks confirmation until done)</option><option value="opt"${x.optional ? ' selected' : ''}>Optional</option></select></div>`;
+    },
+    update(x, el) {
+      const l = el.l.value.trim(); if (!l) return { err: 'Please enter a checklist item.' };
+      if (S.handover.items.some(o => o && o.id !== x.id && String(o.label).toLowerCase() === l.toLowerCase())) return { err: 'This item already exists.' };
+      x.label = l;
+      x.note = el.n.value.trim() || 'Added by you';
+      x.optional = el.r.value === 'opt';
+      return { text: l };
+    },
+    push: v => S.handover.items.push(v), go: 'handover' },
+  change: { noun: 'change request', plural: 'change requests', where: 'Changes', empty: 'No custom change requests yet.', locked: () => false,
+    list: () => S.changes.filter(x => x && x.custom), label: x => x.title, sub: x => `${x.status} · ${x.proposal ? 'Studio: ' + sgn(x.proposal.cost) : x.estimate ? 'Estimate: ' + inr(x.estimate) : 'No extra cost'}`,
+    drop: ids => { S.changes = S.changes.filter(x => !ids.includes(x.id)); },
+    form: `<div class="field"><label for="ad-ct">Title</label><input id="ad-ct" name="ttl" maxlength="60" placeholder="e.g. Extra shelf in study" required></div>
+      <div class="field"><label for="ad-cd">Description</label><textarea id="ad-cd" name="desc" maxlength="400" placeholder="What would you like changed?" required></textarea></div>
+      <div class="two-f">
+        <div class="field"><label for="ad-cc">Your estimated extra cost (₹, optional, not added to budget)</label><input id="ad-cc" name="cost" type="number" inputmode="numeric" min="0" step="500" placeholder="0"></div>
+        <div class="field"><label for="ad-ci">Schedule impact</label><select id="ad-ci" name="impact"><option>No delay</option><option>+1 day</option><option>+2 days</option><option>+3 to 5 days</option><option>1 week or more</option></select></div>
+      </div>`,
+    make(el) {
+      const ttl = el.ttl.value.trim(), desc = el.desc.value.trim(), cost = el.cost.value === '' ? 0 : Number(el.cost.value);
+      if (!ttl) return { err: 'Please add a short title.' };
+      if (!desc) return { err: 'Please add a short description.' };
+      if (!Number.isFinite(cost) || cost < 0) return { err: 'Enter a cost of 0 or more.' };
+      return { v: { id: 'c' + Date.now(), title: ttl, desc, estimate: Math.round(cost), proposal: null, cost: null, impact: el.impact.value, ref: '', status: 'Under review', history: [{ s: 'Submitted', date: today() }], custom: true }, text: ttl };
+    },
+    editForm(x) {
+      const impacts = ['No delay', '+1 day', '+2 days', '+3 to 5 days', '1 week or more'];
+      return `<div class="field"><label for="ed-ct">Title</label><input id="ed-ct" name="ttl" maxlength="60" value="${esc(x.title)}" required></div>
+        <div class="field"><label for="ed-cd">Description</label><textarea id="ed-cd" name="desc" maxlength="400" required>${esc(x.desc || '')}</textarea></div>
+        <div class="two-f">
+          <div class="field"><label for="ed-cc">Your estimated extra cost (₹, optional, not added to budget)</label><input id="ed-cc" name="cost" type="number" inputmode="numeric" min="0" step="500" value="${x.estimate != null ? x.estimate : 0}"></div>
+          <div class="field"><label for="ed-ci">Schedule impact</label><select id="ed-ci" name="impact">${impacts.map(im => `<option${x.impact === im ? ' selected' : ''}>${im}</option>`).join('')}</select></div>
+        </div>`;
+    },
+    update(x, el) {
+      const ttl = el.ttl.value.trim(), desc = el.desc.value.trim(), cost = el.cost.value === '' ? 0 : Number(el.cost.value);
+      if (!ttl) return { err: 'Please add a short title.' };
+      if (!desc) return { err: 'Please add a short description.' };
+      if (!Number.isFinite(cost) || cost < 0) return { err: 'Enter a cost of 0 or more.' };
+      x.title = ttl;
+      x.desc = desc;
+      x.estimate = Math.round(cost);
+      x.impact = el.impact.value;
+      return { text: ttl };
+    },
+    push: v => S.changes.unshift(v), go: 'changes' }
+};
+const customBox = (kind, addLabel) => {
+  const k = CK[kind]; if (!k) return '';
+  const l = k.list();
+  return `<section class="card cust" aria-label="Your ${k.plural}"><div class="cust-h"><h2 class="eyebrow">Your ${k.plural}</h2><div class="row">
+    <button class="btn sm primary" data-a="cust-add" data-kind="${kind}"${k.locked() ? ' disabled title="Not available after handover is confirmed"' : ''}>${addLabel}</button>
+    ${!k.locked() ? `<button class="btn sm danger" data-a="cust-delall" data-kind="${kind}"${!l.length ? ' style="opacity:.6"' : ''}>Delete all</button>` : ''}</div></div>
+    ${l.length ? `<ul class="list">${l.map(x => `<li class="li"><div class="l"><strong>${esc(k.label(x))}</strong><small>${esc(k.sub(x))}</small></div><div class="r">
+      ${kind === 'doc' ? `<button class="btn sm" data-a="doc" data-id="ud-${esc(x.id)}">Preview</button>` : ''}
+      ${k.locked() ? '' : `<button class="btn sm" data-a="cust-edit" data-kind="${kind}" data-id="${esc(x.id)}" aria-label="Edit ${esc(k.label(x))}">Edit</button>`}
+      ${k.locked() ? '' : `<button class="btn sm danger" data-a="cust-del" data-kind="${kind}" data-id="${esc(x.id)}" aria-label="Delete ${esc(k.label(x))}">Delete</button>`}</div></li>`).join('')}</ul>` : `<p class="muted small">${k.empty}</p>`}</section>`;
+};
+function openAdd(kind) {
+  if (kind === 'change') { openChangeForm(); return; }
+  const k = CK[kind]; if (!k || k.locked()) return;
+  setModal('Add ' + k.noun, `<form data-form="add" data-kind="${kind}" novalidate>${k.form}<p class="err" role="alert" hidden></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-a="close">Cancel</button><button class="btn primary" type="submit">Save ${k.noun}</button></div></form>`);
+  setTimeout(() => { const f = $('#modal input:not([type=hidden]), #modal select, #modal textarea'); if (f) f.focus(); }, 40);
+}
+function openEdit(kind, id) {
+  const k = CK[kind]; if (!k || k.locked()) return;
+  const item = k.list().find(x => x.id === id);
+  if (!item) return;
+  setModal('Edit ' + k.noun, `<form data-form="edit" data-kind="${kind}" data-id="${esc(id)}" novalidate>${k.editForm(item)}<p class="err" role="alert" hidden></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-a="close">Cancel</button><button class="btn primary" type="submit">Save changes</button></div></form>`);
+  setTimeout(() => { const f = $('#modal input:not([type=hidden]), #modal select, #modal textarea'); if (f) f.focus(); }, 40);
+}
+function addEntry(f) {
+  const k = CK[f.dataset.kind], err = $('.err', f); if (!k || f.dataset.busy) return;
+  if (k.locked()) { err.textContent = 'Not available after handover is confirmed.'; err.hidden = false; return; }
+  const r = k.make(f.elements);
+  if (r.err) { err.textContent = r.err; err.hidden = false; return; }
+  f.dataset.busy = '1';
+  k.push(r.v); notify(k.noun.charAt(0).toUpperCase() + k.noun.slice(1) + ' added', r.text, k.go);
+  save(); $('#modal').close(); render(); toast(`Added ${k.noun}: ${r.text}`);
+}
+function editEntry(f) {
+  const k = CK[f.dataset.kind], id = f.dataset.id, err = $('.err', f); if (!k || f.dataset.busy) return;
+  if (k.locked()) { err.textContent = 'Not available after handover is confirmed.'; err.hidden = false; return; }
+  const item = k.list().find(x => x.id === id);
+  if (!item) { err.textContent = 'Record not found.'; err.hidden = false; return; }
+  const r = k.update(item, f.elements);
+  if (r.err) { err.textContent = r.err; err.hidden = false; return; }
+  f.dataset.busy = '1';
+  save(); $('#modal').close();
+  if (ui.design && ui.design.id === id) renderDesign();
+  render(); toast(`Updated ${k.noun}: ${r.text}`);
+}
+let delBusy = false;
+async function delOne(kind, id) {
+  const k = CK[kind]; if (!k || delBusy || k.locked()) return;
+  const x = k.list().find(y => y.id === id); if (!x) return;
+  delBusy = true; let ok = false;
+  try { ok = await ask({ title: `Delete this ${k.noun}?`, text: `"${k.label(x)}" will be removed from ${k.where}. Original project records are not affected. This cannot be undone in this demo.`, ok: 'Delete', tone: 'danger' }); } finally { delBusy = false; }
+  if (!ok || !k.list().some(y => y.id === id)) return;
+  k.drop([id]); save(); render(); toast(`Deleted ${k.noun}`);
+}
+async function delAll(kind) {
+  const k = CK[kind]; if (!k || delBusy || k.locked()) return;
+  const n = k.list().length;
+  if (!n) { toast(`No custom ${k.plural} to delete in ${k.where}.`); return; }
+  delBusy = true; let ok = false;
+  try { ok = await ask({ title: `Delete all ${n} ${k.plural}?`, text: `This removes only the ${n} ${k.plural} you added in ${k.where}. Original sample records, your profile and every other section stay as they are. This cannot be undone in this demo.`, ok: `Delete ${n}`, tone: 'danger' }); } finally { delBusy = false; }
+  if (!ok) return;
+  const ids = k.list().map(x => x.id); if (!ids.length) return;
+  k.drop(ids); save(); render(); toast(`Deleted ${ids.length} ${k.plural}`);
+}
+
+const NAV = [['home','Home','i-home'],['designs','Designs','i-img'],['materials','Materials','i-layers'],['progress','Progress','i-activity'],['budget','Budget','i-wallet'],['changes','Changes','i-edit'],['handover','Handover','i-key']];
+
+/* ---------- Home ---------- */
+const ring = p => {
+  const r = 54, c = 2 * Math.PI * r;
+  return `<div class="ring" role="img" aria-label="${p} percent complete"><svg viewBox="0 0 128 128" aria-hidden="true">
+    <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--beige)" stroke-width="10"/>
+    <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--sage)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - p / 100)).toFixed(1)}" transform="rotate(-90 64 64)"/></svg>
+    <div class="ring-n"><strong>${p}%</strong><span>complete</span></div></div>`;
+};
+const first = () => S.profile.name.split(' ')[0];
+// The seed has no project start/end. Dates show only if an optional S.project.{start,end} ISO date exists; never inferred from payments or other records.
+const projDates = () => { const pr = S.project || {}, ok = v => (typeof v === 'string' && fmtDate(v) ? v : ''); return { start: ok(pr.start), end: ok(pr.end) }; };
+const nextDue = () => { const l = payList().filter(p => !p.tbc); return l.find(p => !p.paid && p.issued) || l.find(p => !p.paid); };
+const pendingProps = () => S.changes.filter(c => c.status === 'Proposal sent' && c.proposal);
+const pendingTotal = () => pendingProps().reduce((a, c) => a + Math.max(0, Number(c.proposal.cost) || 0), 0);
+function activity() {
+  const e = [], arr = v => (Array.isArray(v) ? v : []), add = (d, t, sub) => { if (t) e.push({ d: typeof d === 'string' && fmtDate(d) ? d : '', t: String(t), s: sub || '' }); };
+  arr(S.changes).forEach(c => arr(c && c.history).forEach(h => h && add(h.date, c.title || 'Change request', 'Change request · ' + (h.s || 'Update'))));
+  try { payList().forEach(p => { if (p && p.paid === true) add(p.date, 'Payment received', `${p.label || 'Payment'} · ${inr(p.amount)}`); }); } catch (x) {}
+  arr(S.designs).forEach(d => arr(d && d.versions).forEach(v => v && v.decided && add(v.decided, `${d.room || 'Room'} design approved`, 'Version ' + (v.v || ''))));
+  arr(S.materials).forEach(m => { if (m && m.decided) add(m.decided, `${selOpt(m).name || m.name || 'Material'} approved`, m.name || 'Material selection'); });
+  arr(S.updates).forEach(u => u && add(u.date, u.caption, 'Site update' + (u.room ? ' · ' + u.room : '')));
+  return e.sort((a, b) => (a.d === b.d ? 0 : !a.d ? 1 : !b.d ? -1 : a.d < b.d ? 1 : -1)).slice(0, 6);
+}
+function pendCard(a) {
+  let m, eb, st, lbl, meta, txt, cta;
+  if (a.k === 'design') { const d = getDesign(a.id), c = curV(d); m = media(c.img, d.room + ' design', 700, 'r43'); eb = d.room; st = 'Awaiting your approval'; lbl = `${d.room} Design ${c.v}`; meta = ''; txt = c.note || 'Please review and approve.'; cta = 'View & Approve'; }
+  else if (a.k === 'material') { const x = getMat(a.id), o = selOpt(x); m = media(null, o.name, 0, 'r43', o.swatch); eb = 'Material selection'; st = 'Selection required'; lbl = x.name; meta = o.price || ''; txt = `Current choice: ${o.name} (${o.spec}). Confirm it or pick another.`; cta = 'Choose Material'; }
+  else { const c = S.changes.find(x => x.id === a.id), p = c.proposal; m = media(null, 'Studio proposal', 0, 'r43'); eb = 'Studio proposal'; st = 'Proposal ready'; lbl = c.title; meta = `${sgn(p.cost)} · ${p.impact}`; txt = 'Not added to your budget until you accept.'; cta = 'Review Proposal'; }
+  return `<article class="pc need">${m}<div class="pc-b"><span class="pc-eb">${esc(eb)}</span><h3>${esc(lbl)}</h3><span class="chip warn">${esc(st)}</span>${meta ? `<span class="pc-meta">${esc(meta)}</span>` : ''}<p class="muted small">${esc(txt)}</p>
+    <button class="btn primary" data-a="act" data-k="${a.k}" data-id="${a.id}">${esc(cta)} ${ic('i-chev')}</button></div></article>`;
+}
+function roomCard(d) {
+  const c = curV(d), aw = c.status === 'Awaiting approval', ok = c.status === 'Approved';
+  const cm = d.id === 'kitchen' && ok && getMat('countertop').status === 'Awaiting approval';
+  const st = ok ? 'Approved' : aw ? 'Awaiting approval' : 'In progress';
+  const cta = cm ? 'Choose materials' : aw ? 'Approve design' : 'View design';
+  const at = cm ? 'data-a="act" data-k="material" data-id="countertop"' : `data-a="open-design" data-id="${d.id}"`;
+  return `<button class="rc ${ok ? 'ok' : aw ? 'aw' : 'ip'}" ${at} aria-label="${esc(d.room)}: ${st}. ${cta}">${media(c.img, d.room + ' design', 800, 'r43')}
+    <span class="rc-b"><strong>${esc(d.room)}</strong>${chip(st)}<span class="rc-cta">${cta} ${ic('i-chev')}</span></span></button>`;
+}
+function vHome() {
+  const p = overall(), acts = pending(), P = S.profile, pd = projDates(), due = nextDue();
+  const si = S.stages.indexOf(S.stage) + 1, ev = activity();
+  const nx = []; // "Up next" reuses the existing milestone, unpaid payment milestones and optional project end date
+  if (S.milestone && S.milestone.title) nx.push({ d: S.milestone.date, t: S.milestone.title, s: 'Project milestone' });
+  payList().forEach(x => { if (!x.paid && !x.tbc && fmtDate(x.date) && x.date >= today()) nx.push({ d: x.date, t: 'Payment due: ' + x.label, s: inr(x.amount) }); });
+  if (pd.end) nx.push({ d: pd.end, t: 'Expected completion', s: 'Handover to you' });
+  nx.sort((x, y) => (x.d < y.d ? -1 : x.d > y.d ? 1 : 0)); nx.splice(3);
+  return head(`Welcome back, ${esc(first())}`, 'Here is where your home stands today. Your design team keeps this page up to date as work progresses.') + `
+  <div class="hm">
+    <article class="hero" aria-label="Project overview">
+      ${media(S.hero, 'Modern apartment interior', 1600)}
+      <div class="hero-top"><span class="chip glass">Phase: ${esc(S.stage)}</span></div>
+      <div class="hero-bot"><span class="loc">${ic('i-pin')} ${esc(P.location)}</span><strong>${esc(P.name)}'s ${esc(P.project)}</strong>
+        <span class="dates">${pd.start || pd.end ? [pd.start && 'Started ' + fmtDate(pd.start), pd.end && 'Estimated completion ' + fmtDate(pd.end)].filter(Boolean).join(' · ') : 'Project dates to be confirmed'}</span></div>
+    </article>
+    <section class="card pgc" aria-label="Overall project progress">
+      <div class="pgc-h"><div><span class="k">Overall completion</span><strong class="big">${p}%</strong></div>
+        <div class="pgc-m"><div><span class="k">Current stage</span><strong>${esc(S.stage)}</strong><small>Phase ${si} of ${S.stages.length}</small></div>
+          <div><span class="k">Expected completion</span><strong>${pd.end ? fmtDate(pd.end) : 'To be confirmed'}</strong></div></div></div>
+      <div class="bar tall" role="progressbar" aria-label="Overall completion" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
+    </section>
+    <section aria-label="Next actions"><h2 class="sec first">Needs your attention${acts.length ? `<span class="chip warn">${acts.length}</span>` : ''}</h2>
+      ${acts.length ? `<div class="pcs">${acts.map(pendCard).join('')}</div>` : `<div class="card empty">You're all caught up. Nothing needs your decision right now.</div>`}
+    </section>
+    <section aria-label="Room progress"><h2 class="sec">Progress by room</h2>
+      <div class="card">${S.rooms.map(r => `<div class="rp"><span>${esc(r.room)}</span><div class="bar" role="progressbar" aria-label="${esc(r.room)} progress" aria-valuenow="${r.pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${r.pct}%"></i></div><strong>${r.pct}%</strong></div>`).join('')}
+        <button class="btn sm" data-a="go" data-go="progress" style="margin-top:10px">View site progress</button></div>
+    </section>
+    <div class="duo">
+      <section class="card" aria-label="Materials status"><h2 class="eyebrow">Materials</h2>
+        <ul class="ms">${S.materials.map(m => `<li><div><strong>${esc(m.name)}</strong><small>${esc(selOpt(m).name)}</small></div>${chip(m.status)}</li>`).join('')}</ul>
+        <button class="btn sm" data-a="go" data-go="materials" style="margin-top:14px">View all materials</button></section>
+      <section class="card" aria-label="Up next"><h2 class="eyebrow">Up next</h2>
+        ${nx.length ? `<ol class="tl2">${nx.map(x => `<li><i></i><div><strong>${esc(x.t)}</strong><small>${esc(x.s)}</small></div><time>${fmtDate(x.d, true)}</time></li>`).join('')}</ol>` : `<p class="muted">Nothing scheduled yet. Your design team will add the next steps here.</p>`}</section>
+    </div>
+    <section aria-label="Room designs"><h2 class="sec">Room designs</h2><div class="rcs">${S.designs.map(roomCard).join('')}</div></section>
+    <section class="card" aria-label="Recent activity"><h2 class="eyebrow">Recent activity</h2>
+      ${ev.length ? `<ol class="tl2">${ev.map(x => `<li><i></i><div><strong>${esc(x.t)}</strong><small>${esc(x.s)}</small></div><time>${x.d ? fmtDate(x.d, true) : ''}</time></li>`).join('')}</ol>` : `<p class="muted">No activity yet. Updates will appear here as your project moves forward.</p>`}
+      <button class="btn sm" data-a="go" data-go="progress" style="margin-top:14px">View site progress</button></section>
+    <section class="stats" aria-label="Payments"><div class="stat"><span class="k">Outstanding balance</span><strong>${inr(balanceDue())}</strong><small>Next payment: ${due ? inr(due.amount) + ' · ' + esc(due.label) + (fmtDate(due.date, true) ? ', due ' + fmtDate(due.date, true) : '') : 'none due'}</small>${pendingTotal() ? `<small>${inr(pendingTotal())} in pending proposals, not included</small>` : ''}</div></section>
+  </div>`;
+}
+
+/* ---------- Designs ---------- */
+function vDesigns() {
+  return head('Designs', 'Tap a room to review') + banner('design') + `<div class="rooms">${S.designs.map(d => {
+    const c = curV(d);
+    return `<button class="room" data-a="open-design" data-id="${d.id}" aria-label="${esc(d.room)}, version ${esc(c.v)}, ${esc(c.status)}">
+      ${media(c.img, d.room + ' design', 1000, 'r43')}
+      <span class="meta"><span><strong>${esc(d.room)}</strong><small>Version ${esc(c.v)}</small></span>${chip(c.status)}</span></button>`;
+  }).join('')}</div>` + customBox('room', 'Add room');
+}
+function openDesign(id) { const d = getDesign(id); if (!d) return; ui.design = { id, v: d.current, form: false }; renderDesign(); }
+function renderDesign() {
+  const u = ui.design; if (!u) return;
+  const d = getDesign(u.id); if (!d) return;
+  const ver = verOf(d, u.v), isCur = ver.v === d.current;
+  const dotTone = s => (TONE[s] === 'ok' ? 'ok' : TONE[s] === 'warn' ? 'warn' : TONE[s] === 'bad' ? 'bad' : '');
+  let act;
+  if (!isCur) act = `<p class="muted small">Earlier version, for reference.</p><div class="row"><button class="btn sm" data-a="dv" data-v="${esc(d.current)}">View current version</button></div>`;
+  else if (ver.status === 'Approved') act = `<div class="okbox">${ic('i-check')} Approved on ${fmtDate(ver.decided)}</div>`;
+  else if (u.form) act = `<form data-form="revise" class="stack-form" novalidate>
+      <label for="rv">What should change?</label>
+      <textarea id="rv" name="c" rows="4" maxlength="400" placeholder="e.g. Move the sink to the window wall" required></textarea>
+      <p class="err" role="alert" hidden></p>
+      <div class="row"><button class="btn primary" type="submit">Send request</button><button class="btn" type="button" data-a="design-change-cancel">Cancel</button></div></form>`;
+  else act = `<div class="row"><button class="btn primary" data-a="design-approve">Approve Design</button><button class="btn" data-a="design-change">Request Changes</button>${d.custom ? `<button class="btn" data-a="cust-edit" data-kind="room" data-id="${esc(d.id)}">Edit room</button><button class="btn danger" data-a="cust-del" data-kind="room" data-id="${esc(d.id)}">Delete room</button>` : ''}</div>` +
+      (ver.status === 'Revision requested' ? `<p class="muted small">Your last request has been sent to the designer.</p>` : '');
+  const hist = [...d.versions].reverse().map(v => `<li><span><strong>${esc(v.v)}</strong> ${chip(v.status)}</span><span class="muted">${fmtDate(v.decided || v.date, true)}</span></li>`).join('');
+  const cm = d.comments.length ? `<div><h3 class="eyebrow">Your requests</h3><ul class="hist">${[...d.comments].reverse().map(c =>
+    `<li><span><strong>${esc(c.v)}</strong> · ${fmtDate(c.date, true)}<span class="cm">${esc(c.text)}</span></span></li>`).join('')}</ul></div>` : '';
+  setModal(`${esc(d.room)}`, `<div class="dd">
+    <div>${media(ver.img, `${d.room} ${ver.v}`, 1400, 'r43')}</div>
+    <div class="dd-side">
+      <div class="seg" role="group" aria-label="Design version">${d.versions.map(v =>
+        `<button class="seg-b" data-a="dv" data-v="${esc(v.v)}" aria-pressed="${v.v === ver.v}"><i class="${dotTone(v.status)}"></i>${esc(v.v)}</button>`).join('')}</div>
+      <div class="note"><span class="k">Designer note</span><p>${esc(ver.note)}</p></div>
+      <div>${chip(ver.status)}</div>
+      ${act}
+      <div><h3 class="eyebrow">Versions</h3><ul class="hist">${hist}</ul></div>
+      ${cm}
+    </div></div>`, { wide: true });
+  if (u.form) setTimeout(() => { const t = $('#rv'); if (t) t.focus(); }, 40);
+}
+async function approveDesign() {
+  const u = ui.design; if (!u) return;
+  const d = getDesign(u.id), ver = verOf(d, d.current);
+  const ok = await ask({ title: `Approve ${d.room} ${ver.v}?`, text: 'This marks the design as approved for execution.', ok: 'Approve' });
+  if (!ok) return;
+  ver.status = 'Approved'; ver.decided = today(); save();
+  renderDesign(); render(); toast(`${d.room} ${ver.v} approved`);
+}
+
+/* ---------- Materials ---------- */
+function vMaterials() {
+  return head('Materials', 'Choose and approve your finishes') + banner('material') + `<div class="mats">${S.materials.map(m => {
+    const o = selOpt(m);
+    return `<article class="card mat">
+      ${media(o.img, o.name, 800, 'r43', o.swatch)}
+      <div class="mat-b">
+        <div class="mat-top"><h3>${esc(m.name)}</h3>${chip(m.status)}</div>
+        <p class="spec">${esc(o.name)} · ${esc(o.spec)}</p>
+        ${o.price ? `<p class="price">${esc(o.price)}</p>` : ''}
+        ${m.status === 'Ordered' ? `<p class="muted small">Ordered ${fmtDate(m.orderedDate, true)}</p>` : ''}
+        <div class="row">
+          <button class="btn sm" data-a="open-mat" data-id="${m.id}">${m.status === 'Ordered' ? 'View Details' : 'View Options'}</button>
+          ${m.status === 'Awaiting approval' ? `<button class="btn sm primary" data-a="mat-approve-card" data-id="${m.id}">Approve Selection</button>` : ''}
+        </div>
+      </div></article>`;
+  }).join('')}</div>`;
+}
+function openMat(id) { const m = getMat(id); if (!m) return; ui.mat = { id, sel: m.selected }; renderMat(); }
+function renderMat() {
+  const u = ui.mat; if (!u) return;
+  const m = getMat(u.id); if (!m) return;
+  const locked = m.status === 'Ordered';
+  const body = `<p class="muted" style="margin-bottom:14px">${locked ? 'This material is already ordered, so options are view-only.' : 'Pick an option, then save or approve it.'}</p>
+    <div class="opts" role="radiogroup" aria-label="${esc(m.name)} options">${m.options.map(o => `
+      <label class="opt ${o.id === u.sel ? 'on' : ''} ${locked ? 'dis' : ''}">
+        <input type="radio" name="o" value="${esc(o.id)}" ${o.id === u.sel ? 'checked' : ''} ${locked ? 'disabled' : ''}>
+        ${media(o.img, o.name, 300, '', o.swatch)}
+        <span><strong>${esc(o.name)}</strong><small>${esc(o.spec)}${o.price ? ' · ' + esc(o.price) : ''}</small></span>
+      </label>`).join('')}</div>`;
+  const same = u.sel === m.selected;
+  const foot = locked ? `<button class="btn" data-a="close">Close</button>` :
+    `<button class="btn" data-a="close">Close</button>
+     <button class="btn" data-a="mat-save" ${same ? 'disabled' : ''}>Save as Preferred</button>
+     <button class="btn primary" data-a="mat-approve" ${same && m.status === 'Approved' ? 'disabled' : ''}>${same && m.status === 'Approved' ? 'Approved' : 'Approve Selection'}</button>`;
+  setModal(esc(m.name), body, { foot });
+}
+async function approveMat(id, optId, fromModal) {
+  const m = getMat(id); if (!m || m.status === 'Ordered') return;
+  const o = m.options.find(x => x.id === (optId || m.selected)) || selOpt(m);
+  const ok = await ask({ title: `Approve ${o.name}?`, text: `${m.name} · ${o.spec}${o.price ? ' · ' + o.price : ''}`, ok: 'Approve' });
+  if (!ok) return;
+  m.selected = o.id; m.status = 'Approved'; m.decided = today(); save();
+  if (fromModal) $('#modal').close();
+  render(); toast(`${m.name} approved`);
+}
+
+/* ---------- Progress ---------- */
+function vProgress() {
+  const idx = S.stages.indexOf(S.stage), p = overall(), ups = sortedUpdates();
+  return head('Progress', `${esc(S.stage)} stage`) +
+  (S.delay ? `<div class="notice" role="status">${esc(S.delay)}</div>` : '') + `
+  <section class="card" aria-label="Project timeline"><ol class="timeline">${S.stages.map((s, i) => {
+    const st = i < idx ? 'done' : i === idx ? 'current' : 'upcoming';
+    return `<li class="tl ${st}" ${st === 'current' ? 'aria-current="step"' : ''}><span class="dot">${st === 'done' ? ic('i-check') : ''}</span>
+      <span><strong>${esc(s)}</strong><small>${st === 'done' ? 'Completed' : st === 'current' ? 'In progress' : 'Upcoming'}</small></span></li>`;
+  }).join('')}</ol></section>
+  <div class="grid2">
+    <section class="card" aria-label="Overall progress">
+      <div class="row-b"><h2 class="eyebrow" style="margin:0">Overall progress</h2><strong>${p}%</strong></div>
+      <div class="bar tall" style="margin-top:12px" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
+      <div class="rooms-l">${S.rooms.map(r => `<div class="rl"><span>${esc(r.room)}</span><div class="bar"><i style="width:${r.pct}%"></i></div><span class="pct">${r.pct}%</span></div>`).join('')}</div>
+    </section>
+    <section class="card ms" aria-label="Upcoming milestone">
+      <h2 class="eyebrow">Upcoming milestone</h2>
+      <h3>${esc(S.milestone.title)}</h3>
+      <p class="cal">${ic('i-cal')} ${fmtDate(S.milestone.date)}</p>
+    </section>
+  </div>
+  <h2 class="sec">Site updates</h2>
+  ${ups.length ? `<div class="photos">${ups.map((u, i) => `<button class="photo" data-a="photo" data-i="${i}" aria-label="Open photo: ${esc(u.caption)}">
+    ${media(u.img, u.caption, 600, 'r43')}<span class="pc"><strong>${esc(u.caption)}</strong><small>${fmtDate(u.date, true)}</small></span></button>`).join('')}</div>`
+    : `<div class="empty">No site updates yet</div>`}`;
+}
+function openLB(i) {
+  const L = sortedUpdates(); if (!L.length) return;
+  ui.lb = (i + L.length) % L.length;
+  const u = L[ui.lb], lb = $('#lightbox');
+  lb.innerHTML = `<button class="icon-btn lb-x" data-a="close" aria-label="Close preview">${ic('i-x')}</button>
+    ${media(u.img, u.caption, 1600, 'lbm')}
+    <div class="lb-cap"><div><strong>${esc(u.caption)}</strong><span>${fmtDate(u.date)}${u.room ? ' · ' + esc(u.room) : ''}</span></div>
+    ${L.length > 1 ? `<div class="lb-nav"><button class="icon-btn" data-a="lb" data-d="-1" aria-label="Previous photo">${ic('i-chevl')}</button><button class="icon-btn" data-a="lb" data-d="1" aria-label="Next photo">${ic('i-chev')}</button></div>` : ''}</div>`;
+  if (!lb.open) { lb.showModal(); sync(); }
+  settle();
+}
+
+/* ---------- Budget ---------- */
+function vBudget() {
+  const rev = revised(), paid = paidTotal(), rem = balanceDue(), pl = payList(), acc = accepted(), pp = pendingProps();
+  const orig = S.budget.original, chg = approvedChanges(), pct = rev > 0 ? Math.min(100, Math.max(0, Math.round(paid / rev * 100))) : 0;
+  const review = S.changes.filter(c => c.status === 'Under review').length;
+  const invs = pl.filter(p => p.paid || p.issued);
+  const fig = (k, v, n, cls = '') => `<div class="fig ${cls}"><span class="k">${k}</span><strong>${v}</strong><small>${n}</small></div>`;
+  return head('Budget', 'Your approved budget, payments and what is still under discussion') + `
+  <div class="figs">
+    ${fig('Original project budget', inr(orig), 'Initial agreed amount')}
+    ${fig('Accepted change costs', sgn(chg), `${acc.length} accepted proposal${acc.length === 1 ? '' : 's'}${credits() ? `, incl. ${inr(credits())} credit` : ''}`)}
+    ${fig('Revised approved budget', inr(rev), 'Original plus accepted changes', 'key')}
+    ${fig('Payments made', inr(paid), 'Recorded as paid')}
+    ${fig('Outstanding balance', inr(rem), 'Approved budget minus payments')}
+    ${fig('Pending proposals', pp.length ? sgn(pendingTotal()) : inr(0), pp.length ? 'Not included until you accept' : 'Nothing awaiting your decision', 'pend')}
+  </div>
+  <section class="card" style="margin-top:16px" aria-label="Budget breakdown"><h2 class="eyebrow">Budget breakdown</h2>
+    <div class="stack" role="img" aria-label="${pct}% of the revised budget paid"><i style="width:${pct}%"></i></div>
+    <div class="legend"><span><b class="sw1"></b>Paid ${inr(paid)} (${pct}%)</span><span><b class="sw2"></b>Outstanding ${inr(rem)}</span></div>
+  </section>
+  <h2 class="sec">Accepted changes</h2>
+  ${acc.length ? `<ul class="list">${acc.map(c => `<li class="li"><div class="l"><strong>${esc(c.title)}</strong><small>Client-approved proposal${Number(c.cost) < 0 ? ' (credit)' : ''}</small></div><div class="r"><span class="amt">${Number(c.cost) === 0 ? 'No cost' : sgn(Number(c.cost))}</span>${chip(c.status)}</div></li>`).join('')}</ul>` : `<div class="card empty">No accepted changes yet.</div>`}
+  <h2 class="sec">Pending proposals <span class="muted small" style="font-family:var(--font)">· not part of your approved budget</span></h2>
+  ${pp.length ? `<ul class="list">${pp.map(c => `<li class="li"><div class="l"><strong>${esc(c.title)}</strong><small>${esc(c.proposal.impact)} · decide in Changes</small></div><div class="r"><span class="amt">${sgn(c.proposal.cost)}</span><button class="btn sm" data-a="go" data-go="changes">Review</button></div></li>`).join('')}</ul>` : `<div class="card empty">No proposals are waiting for you.</div>`}
+  ${review ? `<p class="muted small" style="margin-top:10px">${review} request${review > 1 ? 's' : ''} under review. Prices appear here once the studio sends a proposal.</p>` : ''}
+  <h2 class="sec">Payment milestones</h2>
+  <ul class="list">${pl.map(p => `<li class="li">
+    <div class="l"><strong>${esc(p.label)}</strong><small>${p.paid ? 'Paid ' : 'Due '}${fmtDate(p.date)}</small></div>
+    <div class="r"><span class="amt">${payAmt(p)}</span>${p.paid ? chip('Paid') : chip(p.tag || 'Upcoming')}${p.custom ? `<button class="btn sm" data-a="cust-edit" data-kind="pay" data-id="${esc(p.id)}" aria-label="Edit ${esc(p.label)}" style="margin-left:8px">Edit</button><button class="btn sm danger" data-a="cust-del" data-kind="pay" data-id="${esc(p.id)}" aria-label="Delete ${esc(p.label)}" style="margin-left:6px">Delete</button>` : ''}</div></li>`).join('')}</ul>
+  ${customBox('pay', 'Add milestone')}
+  <h2 class="sec">Invoices and receipts</h2>
+  <ul class="list">${invs.map(p => `<li class="li inv">
+    <span class="ficon">${ic('i-file')}</span>
+    <div class="l"><strong>${p.paid ? 'Receipt' : 'Invoice'} ${esc(p.no)}</strong><small>${esc(p.label)} · ${payAmt(p)}</small></div>
+    <div class="r"><button class="btn sm" data-a="doc" data-id="pay-${p.id}">Preview</button></div></li>`).join('')}</ul>
+  <p class="foot-note">Payment records are demo records. No payments are made or processed here. Your own estimates, pending, under-review and declined requests are never counted in the approved budget.</p>`;
+}
+
+/* ---------- Changes ---------- */
+function vChanges() {
+  const list = S.changes;
+  return head('Changes', 'Request tweaks to your plan') + `
+  <div class="toolbar">
+    <div class="sumline"><span class="muted small">Approved changes</span><strong>${sgn(approvedChanges())}</strong><span class="muted small">Revised budget ${inr(revised())}</span></div>
+    <div class="row">
+      <button class="btn primary" data-a="cr-new">${ic('i-plus')} New Request</button>
+      <button class="btn sm danger" data-a="cust-delall" data-kind="change"${!CK.change.list().length ? ' style="opacity:.6"' : ''}>Delete all</button>
+    </div>
+  </div>
+  ${list.length ? `<div class="crs">${list.map(c => `<article class="card cr">
+    <div class="top-r2"><h3>${esc(c.title)}</h3>${chip(c.status)}</div>
+    <p class="desc">${esc(c.desc)}</p>
+    <div class="meta-r">${c.proposal
+      ? `<span class="chip">Studio proposal: ${c.proposal.cost ? sgn(c.proposal.cost) : 'No extra cost'}</span><span class="chip">${esc(c.proposal.impact)}</span>`
+      : `<span class="chip">Your estimate: ${c.estimate ? inr(c.estimate) : 'none'}</span><span class="chip">Awaiting studio proposal</span>`}${c.ref ? `<span class="chip">${ic('i-file')} ${esc(c.ref)}</span>` : ''}</div>
+    ${c.status === 'Under review' ? `${LINK ? '' : `<div class="row"><button class="btn sm" data-a="cr-studio" data-id="${c.id}">Simulate studio proposal (demo)</button></div>`}<p class="muted small">${LINK ? 'The studio is reviewing this request. You will be notified here once they decide. ' : 'You can accept or decline once the studio sends a priced proposal. '}Your budget is unchanged until then.</p>` : ''}
+    ${c.status === 'Proposal sent' ? `<div class="row"><button class="btn primary sm" data-a="cr-decide" data-id="${c.id}" data-d="Approved">Accept proposal</button><button class="btn danger sm" data-a="cr-decide" data-id="${c.id}" data-d="Declined">Decline</button></div>` : ''}
+    ${c.custom ? `<div class="row" style="margin-top:10px"><button class="btn sm" data-a="cust-edit" data-kind="change" data-id="${esc(c.id)}" aria-label="Edit ${esc(c.title)}">Edit</button><button class="btn sm danger" data-a="cust-del" data-kind="change" data-id="${esc(c.id)}" aria-label="Delete ${esc(c.title)}">Delete</button></div>` : ''}
+    <ul class="hist">${c.history.map(h => `<li><span>${esc(h.s)}</span><span>${fmtDate(h.date, true)}</span></li>`).join('')}</ul>
+  </article>`).join('')}</div>` : `<div class="empty">No change requests yet</div>`}
+  ${customBox('change', 'New Request')}`;
+}
+function openChangeForm() {
+  setModal('New change request', `<form data-form="change" novalidate>
+    <div class="field"><label for="cr-t">Title</label><input id="cr-t" name="ttl" maxlength="60" placeholder="e.g. Extra shelf in study" required></div>
+    <div class="field"><label for="cr-d">Description</label><textarea id="cr-d" name="desc" maxlength="400" placeholder="What would you like changed?" required></textarea></div>
+    <div class="field"><label for="cr-f">Reference image or file (optional)</label><input id="cr-f" name="ref" type="file" accept="image/*,.pdf"></div>
+    <div class="two-f">
+      <div class="field"><label for="cr-c">Your estimated extra cost (₹, optional, not added to budget)</label><input id="cr-c" name="cost" type="number" inputmode="numeric" min="0" step="500" placeholder="0"></div>
+      <div class="field"><label for="cr-i">Schedule impact</label><select id="cr-i" name="impact"><option>No delay</option><option>+1 day</option><option>+2 days</option><option>+3 to 5 days</option><option>1 week or more</option></select></div>
+    </div>
+    <p class="err" role="alert" hidden></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-a="close">Cancel</button><button class="btn primary" type="submit">Submit Request</button></div>
+  </form>`);
+  setTimeout(() => { const t = $('#cr-t'); if (t) t.focus(); }, 40);
+}
+const notify = (text, sub, go) => S.notifications.unshift({ id: 'n' + Date.now() + Math.random().toString(36).slice(2, 6), text, sub, date: today(), read: false, go });
+async function decide(id, dec) {
+  const c = S.changes.find(x => x.id === id); if (!c || c.status !== 'Proposal sent' || !c.proposal) return;
+  const appr = dec === 'Approved', cost = Number(c.proposal.cost) || 0;
+  const text = appr
+    ? `${c.title}: ${cost ? `${cost < 0 ? 'credit of ' + inr(-cost) : 'adds ' + inr(cost)} (budget ${inr(revised())} to ${inr(revised() + cost)})` : 'no extra cost'}. Schedule: ${c.proposal.impact}.`
+    : `You are declining the studio's proposal for ${c.title}. Your budget stays at ${inr(revised())}.`;
+  const ok = await ask({ title: `${appr ? 'Accept' : 'Decline'} this proposal?`, text, ok: appr ? 'Accept' : 'Decline', tone: appr ? '' : 'danger' });
+  if (!ok || c.status !== 'Proposal sent') return;   // re-check: a decision is applied once only
+  c.status = dec; c.history.push({ s: dec, date: today() });
+  if (appr) { c.cost = cost; c.impact = c.proposal.impact; }
+  notify('Change request decision recorded', `${c.title} · ${dec}`, 'changes');
+  save(); render(); toast(`Proposal ${appr ? 'accepted' : 'declined'}`);
+}
+async function studioReply(id) {
+  const c = S.changes.find(x => x.id === id); if (!c || c.status !== 'Under review') return;
+  const ok = await ask({ title: 'Simulate studio response?', text: 'Demo only: the studio panel is not connected, so this creates a sample proposal using your estimate. No budget change happens until you accept it.', ok: 'Create sample proposal' });
+  if (!ok || c.status !== 'Under review') return;
+  c.proposal = { cost: Number(c.estimate) || 0, impact: c.impact, date: today() };
+  c.status = 'Proposal sent'; c.history.push({ s: 'Studio proposal sent', date: today() });
+  notify('Studio proposal ready for your decision', `${c.title} · ${c.proposal.cost ? sgn(c.proposal.cost) : 'No extra cost'} · ${c.proposal.impact}`, 'changes');
+  save(); render(); toast('Sample proposal created. Awaiting your decision');
+}
+
+/* ---------- Handover ---------- */
+const hvItems = () => S.handover.items.filter(i => i && typeof i === 'object').map(i => i.id === 'confirm' ? Object.assign({}, i, { done: !!S.handover.confirmed, note: S.handover.confirmed ? 'Confirmed ' + fmtDate(S.handover.confirmed, true) : i.note }) : i);
+function chkRow(i) {
+  return `<li class="chk ${i.done ? 'done' : ''}"><span class="tick">${i.done ? ic('i-check') : ''}</span>
+    <span class="tx"><strong>${esc(i.label)}</strong><small>${esc(i.note || '')}</small></span>
+    ${i.client && !S.handover.confirmed ? `<button class="btn sm" data-a="hv-toggle" data-id="${i.id}" aria-pressed="${i.done}">${i.done ? 'Undo' : 'Mark complete'}</button>` : ''}
+    ${i.custom && !S.handover.confirmed ? `<button class="btn sm" data-a="cust-edit" data-kind="item" data-id="${esc(i.id)}" aria-label="Edit ${esc(i.label)}">Edit</button><button class="btn sm danger" data-a="cust-del" data-kind="item" data-id="${esc(i.id)}" aria-label="Delete ${esc(i.label)}" style="margin-left:6px">Delete</button>` : ''}
+    ${i.done ? chip('Done') : chip(i.optional ? 'Optional' : i.client ? 'Outstanding' : 'With studio')}</li>`;
+}
+function vHandover() {
+  const all = hvItems().filter(i => i && i.id !== 'confirm'), req = all.filter(i => !i.optional), opt = all.filter(i => i.optional);
+  const left = req.filter(i => !i.done), done = req.length - left.length, pct = req.length ? Math.round(done / req.length * 100) : 100, c = S.handover.confirmed;
+  return head('Handover', 'A final checklist before you receive your finished home') + `<div class="hv">
+    <div>
+      <section class="card" aria-label="Progress"><h2 class="eyebrow">Required items</h2>
+        <strong class="big">${done} of ${req.length} required items complete</strong>
+        <div class="bar tall" role="progressbar" aria-label="Required items complete" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" style="margin-top:12px"><i style="width:${pct}%"></i></div></section>
+      <h2 class="sec">Required <span class="muted small" style="font-family:var(--font)">· must be complete to confirm</span></h2>
+      <section class="card" aria-label="Required checklist"><ul>${req.map(chkRow).join('')}</ul></section>
+      <h2 class="sec">Optional <span class="muted small" style="font-family:var(--font)">· do not block handover</span></h2>
+      <section class="card" aria-label="Optional checklist"><ul>${opt.map(chkRow).join('')}</ul></section>
+      ${customBox('item', 'Add checklist item')}
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <section class="card" aria-label="Confirm handover"><h2 class="eyebrow">Confirm handover</h2>
+        ${c ? `<div class="okbox">${ic('i-check')} <span>Handover confirmed on ${fmtDate(c)} (demo). Welcome home!</span></div>`
+          : `<button class="btn primary" style="width:100%" data-a="hv-confirm" ${left.length ? 'disabled aria-disabled="true" aria-describedby="hvMsg"' : 'aria-describedby="hvMsg"'}>Confirm Handover</button>
+             <div id="hvMsg" aria-live="polite">${left.length ? `<p class="small" style="margin-top:10px">${left.length} required item${left.length > 1 ? 's' : ''} still outstanding:</p><ul class="small muted" style="margin:6px 0 0 18px;list-style:disc">${left.map(i => `<li>${esc(i.label)}${i.client ? '' : ' (completed by your design team)'}</li>`).join('')}</ul>` : `<p class="muted small" style="margin-top:10px">All required items are complete. Confirming is a simulated demo action.</p>`}</div>`}
+      </section>
+      <section class="card" aria-label="Documents"><h2 class="eyebrow">Documents</h2><div class="list">
+        <div class="li inv"><span class="ficon">${ic('i-file')}</span><div class="l"><strong>Approved design summary</strong><small>Generated from your approvals</small></div><div class="r"><button class="btn sm" data-a="doc" data-id="doc-design">Preview</button></div></div>
+        <div class="li inv"><span class="ficon">${ic('i-file')}</span><div class="l"><strong>Budget statement</strong><small>Generated from your records</small></div><div class="r"><button class="btn sm" data-a="doc" data-id="doc-budget">Preview</button></div></div>
+        <div class="li inv"><span class="ficon">${ic('i-file')}</span><div class="l"><strong>Warranty documents</strong><small>Not supplied yet</small></div><div class="r">${chip('Optional')}</div></div>
+        ${udocs().map(d => `<div class="li inv"><span class="ficon">${ic('i-file')}</span><div class="l"><strong>${esc(d.title)}</strong><small>${esc(d.type || 'Document')} · added ${fmtDate(d.date)}</small></div><div class="r"><button class="btn sm" data-a="doc" data-id="ud-${esc(d.id)}">Preview</button>${d.custom ? `<button class="btn sm" data-a="cust-edit" data-kind="doc" data-id="${esc(d.id)}" aria-label="Edit ${esc(d.title)}" style="margin-left:6px">Edit</button><button class="btn sm danger" data-a="cust-del" data-kind="doc" data-id="${esc(d.id)}" aria-label="Delete ${esc(d.title)}" style="margin-left:6px">Delete</button>` : ''}</div></div>`).join('')}
+      </div></section>
+      ${customBox('doc', 'Add document')}
+    </div></div>`;
+}
+
+function docPreview(id) {
+  const P = S.profile, rows = [];
+  let title = 'Document';
+  if (id.startsWith('pay-')) {
+    const p = payList().find(x => 'pay-' + x.id === id); if (!p) return;
+    title = `${p.paid ? 'Receipt' : 'Invoice'} ${p.no}`;
+    rows.push(['Client', P.name], ['Project', `${P.project}, ${P.location}`], ['For', p.label], ['Amount', payAmt(p)], [p.paid ? 'Paid on' : 'Due on', fmtDate(p.date)], ['Status', p.paid ? 'Paid' : (p.tag || 'Upcoming')]);
+  } else if (id.startsWith('ud-')) {
+    const d = udocs().find(x => 'ud-' + x.id === id); if (!d) return;
+    title = d.title; rows.push(['Type', d.type || 'Document'], ['Added', fmtDate(d.date)], ['Project', `${P.project}, ${P.location}`]); if (d.note) rows.push(['Note', d.note]);
+  } else if (id === 'doc-design') {
+    title = 'Approved design summary';
+    S.designs.forEach(d => { const c = curV(d); rows.push([d.room, `${c.v} · ${c.status}${c.decided ? ' · ' + fmtDate(c.decided, true) : ''}`]); });
+  } else if (id === 'doc-budget') {
+    title = 'Budget statement';
+    rows.push(['Original approved budget', inr(S.budget.original)], ['Approved additional costs', '+ ' + inr(addCosts())], ['Approved credits', '− ' + inr(credits())], ['Revised approved budget', inr(revised())], ['Amount paid', inr(paidTotal())], ['Outstanding balance', inr(balanceDue())]);
+  } else return;
+  setModal(esc(title), `<dl class="kv">${rows.map(r => `<div><dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd></div>`).join('')}</dl>
+    <p class="muted small">Sample document generated for this demo.</p>`, { foot: `<button class="btn" data-a="close">Close</button>` });
+}
+
+const VIEWS = { home: vHome, designs: vDesigns, materials: vMaterials, progress: vProgress, budget: vBudget, changes: vChanges, handover: vHandover };
+
+/* =========================================================
+   6. Chrome: nav, notifications, profile, drawer, sidebar
+   ========================================================= */
+function buildNav() {
+  $('#nav').innerHTML = NAV.map(([k, label, icon]) => `<a class="nav-item" href="#/${k}" data-nav="${k}" title="${label}">${ic(icon)}<span class="lbl">${label}</span><span class="badge" hidden></span></a>`).join('');
+}
+function updateChrome(k) {
+  const c = counts(), item = NAV.find(n => n[0] === k);
+  $('#crumb').textContent = item[1];
+  document.title = `${item[1]} · Hearth Studio (Demo)`;
+  $$('.nav-item').forEach(a => {
+    const on = a.dataset.nav === k;
+    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    const n = c[a.dataset.nav] || 0, b = $('.badge', a);
+    b.hidden = !n; b.textContent = n;
+  });
+  const bell = $('#bellCount'); bell.hidden = !c.unread; bell.textContent = c.unread;
+  $('#avatar').textContent = S.profile.initials;
+}
+function notifSub(n) {
+  if (n.dyn && n.dyn.startsWith('pay:')) { const p = payList().find(x => x.id === n.dyn.slice(4)); if (p) return `${inr(p.amount)} due ${fmtDate(p.date, true)}`; }
+  return n.sub || '';
+}
+function renderNotif() {
+  const list = [...S.notifications].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  $('#popNotif').innerHTML = `<div class="pop-h"><strong>Notifications</strong><button class="link-btn" data-a="notif-read">Mark all read</button></div>` +
+    (list.length ? list.map(n => `<button class="nitem ${n.read ? '' : 'unread'}" data-a="notif" data-id="${n.id}"><span class="ud"></span><span><strong>${esc(n.text)}</strong><small>${esc(notifSub(n))} · ${fmtDate(n.date, true)}</small></span></button>`).join('')
+      : `<div class="empty" style="margin:8px">Nothing new</div>`);
+}
+function renderProfile() {
+  const P = S.profile;
+  $('#popProfile').innerHTML = `<div class="prof">
+    <div class="prof-top"><span class="avatar" aria-hidden="true">${esc(P.initials)}</span><div><strong>${esc(P.name)}</strong><div class="muted small">${esc(P.project)} · ${esc(P.location)}</div></div></div>
+    <dl class="kv"><div><dt>Account</dt><dd>Demo · Client view</dd></div><div><dt>Email</dt><dd>${esc(P.email)}</dd></div><div><dt>Phone</dt><dd>${esc(P.phone)}</dd></div></dl>
+    <h3 class="eyebrow" style="margin:14px 0 0">Project contact</h3>
+    <dl class="kv"><div><dt>${esc(P.designerRole)}</dt><dd>${esc(P.designer)}</dd></div><div><dt>Phone</dt><dd>${esc(P.studioPhone)}</dd></div><div><dt>Email</dt><dd>${esc(P.studioEmail)}</dd></div></dl>
+    ${LINK && IPCS.client.clients().length > 1 ? `<h3 class="eyebrow" style="margin:14px 0 0">Viewing as (prototype)</h3><select data-ipcs-client aria-label="Client" style="width:100%;margin:6px 0 4px">${IPCS.client.clients().map(x => `<option value="${esc(x.id)}"${x.id === LINK.state.cid ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select>` : ''}
+    <p class="muted small" style="margin-bottom:12px">Sample details for this demo.</p>
+    <button class="btn danger sm" style="width:100%" data-a="reset">Reset Demo Data</button></div>`;
+}
+function closePops() {
+  $$('.pop').forEach(p => p.hidden = true);
+  $$('[data-p]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+function togglePop(name) {
+  const map = { notif: 'popNotif', profile: 'popProfile' };
+  Object.keys(map).forEach(k => {
+    const p = $('#' + map[k]), open = k === name && p.hidden;
+    p.hidden = !open; $(`[data-p="${k}"]`).setAttribute('aria-expanded', String(open));
+  });
+}
+const sb = { collapsed: false, pref: false };
+try { const v = localStorage.getItem('hearth-sb'); if (v !== null) { sb.pref = true; sb.collapsed = v === '1'; } } catch (e) {}
+const mqD = matchMedia('(min-width:1024px)'), mqM = matchMedia('(max-width:767px)');
+function applySb() {
+  $('#app').classList.toggle('collapsed', sb.collapsed);
+  const b = $('.sb-toggle');
+  b.setAttribute('aria-expanded', String(!sb.collapsed));
+  b.setAttribute('aria-label', sb.collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+}
+function sbDefault() { if (!sb.pref) sb.collapsed = !mqD.matches; applySb(); }
+function syncSide() { $('#side').inert = mqM.matches && !$('#side').classList.contains('open'); }
+function openDrawer() { $('#side').classList.add('open'); $('#scrim').hidden = false; $('.menu-btn').setAttribute('aria-expanded', 'true'); syncSide(); const a = $('.nav-item[aria-current]') || $('.nav-item'); if (a) a.focus(); }
+function closeDrawer() { $('#side').classList.remove('open'); $('#scrim').hidden = true; $('.menu-btn').setAttribute('aria-expanded', 'false'); syncSide(); }
+
+/* =========================================================
+   7. Router + render
+   ========================================================= */
+let after = null, retried = false;
+const route = () => { const k = location.hash.replace(/^#\/?/, '') || 'home'; return VIEWS[k] ? k : 'home'; };
+function settle() { $$('.media img').forEach(i => { if (i.complete && i.naturalWidth) i.classList.add('loaded'); }); }
+function render() {
+  try {
+    const k = route();
+    $('#view').innerHTML = VIEWS[k]() + `<p class="demo-foot">Demo prototype · sample records saved in this browser only</p>`;
+    updateChrome(k); renderNotif(); renderProfile(); settle();
+  } catch (err) {
+    console.error(err);
+    if (!retried) { retried = true; S = clone(SEED); save(); render(); }
+  }
+}
+function runAfter() { const f = after; after = null; if (f) f(); }
+function go(k, fn) { after = fn || null; if (route() === k && location.hash) { render(); runAfter(); } else location.hash = '#/' + k; }
+window.addEventListener('hashchange', () => {
+  render(); window.scrollTo(0, 0); closeDrawer(); closePops();
+  const h = $('#view h1'); if (h && !after) h.focus({ preventScroll: true });
+  runAfter();
+});
+
+/* =========================================================
+   8. Actions (event delegation)
+   ========================================================= */
+let busy = false;
+const A = {
+  sb() { sb.collapsed = !sb.collapsed; sb.pref = true; try { localStorage.setItem('hearth-sb', sb.collapsed ? '1' : '0'); } catch (e) {} applySb(); },
+  drawer: openDrawer, 'drawer-close': closeDrawer,
+  pop(el) { togglePop(el.dataset.p); },
+  close(el) { const d = el.closest('dialog'); if (d) d.close(); },
+  go(el) { go(el.dataset.go); },
+  act(el) { const id = el.dataset.id; if (el.dataset.k === 'change') go('changes'); else if (el.dataset.k === 'design') go('designs', () => openDesign(id)); else go('materials', () => openMat(id)); },
+  /* designs */
+  'open-design'(el) { openDesign(el.dataset.id); },
+  dv(el) { if (ui.design) { ui.design.v = el.dataset.v; ui.design.form = false; renderDesign(); } },
+  'design-approve': approveDesign,
+  'design-change'() { if (ui.design) { ui.design.form = true; renderDesign(); } },
+  'design-change-cancel'() { if (ui.design) { ui.design.form = false; renderDesign(); } },
+  /* materials */
+  'open-mat'(el) { openMat(el.dataset.id); },
+  'mat-approve-card'(el) { approveMat(el.dataset.id, null, false); },
+  'mat-approve'() { if (ui.mat) approveMat(ui.mat.id, ui.mat.sel, true); },
+  'mat-save'() {
+    const u = ui.mat; if (!u) return;
+    const m = getMat(u.id); if (!m || m.status === 'Ordered' || u.sel === m.selected) return;
+    m.selected = u.sel; m.status = 'Awaiting approval'; save();
+    renderMat(); render(); toast('Preference saved. Approve when ready.');
+  },
+  /* progress */
+  photo(el) { openLB(Number(el.dataset.i) || 0); },
+  lb(el) { openLB(ui.lb + Number(el.dataset.d)); },
+  /* budget + docs */
+  doc(el) { docPreview(el.dataset.id); },
+  /* changes */
+  'cr-new': openChangeForm,
+  'cr-decide'(el) { decide(el.dataset.id, el.dataset.d); },
+  'cr-studio'(el) { studioReply(el.dataset.id); },
+  'cust-add'(el) { openAdd(el.dataset.kind); },
+  'cust-edit'(el) { openEdit(el.dataset.kind, el.dataset.id); },
+  'cust-del'(el) { delOne(el.dataset.kind, el.dataset.id); },
+  'cust-delall'(el) { delAll(el.dataset.kind); },
+  /* handover */
+  'hv-toggle'(el) {
+    const it = S.handover.items.find(x => x.id === el.dataset.id);
+    if (!it || !it.client || S.handover.confirmed) return;
+    it.done = !it.done;
+    if (it.done) { it.prevNote = it.note; it.note = 'Marked complete ' + fmtDate(today(), true); } else if ('prevNote' in it) { it.note = it.prevNote; delete it.prevNote; }
+    if (it.done) notify('Handover progress', `${it.label} · marked complete`, 'handover');
+    save(); render(); toast(it.done ? 'Marked complete' : 'Marked outstanding');
+  },
+  async 'hv-confirm'() {
+    if (S.handover.confirmed) return;
+    const out = hvItems().filter(i => !i.optional && !i.done && i.id !== 'confirm');
+    if (out.length) { toast(`${out.length} required item${out.length > 1 ? 's' : ''} still outstanding`, 'bad'); return; }
+    if (busy) return; busy = true;
+    let ok = false;
+    try { ok = await ask({ title: 'Confirm handover?', text: 'This is a simulated demo action, nothing real is recorded.', ok: 'Confirm handover' }); } finally { busy = false; }
+    if (!ok || S.handover.confirmed || hvItems().some(i => i && !i.optional && !i.done && i.id !== 'confirm')) return;
+    S.handover.confirmed = today(); notify('Handover confirmed', 'Demo action', 'handover'); save(); render(); toast('Handover confirmed (demo)');
+  },
+  /* notifications + profile */
+  notif(el) {
+    const n = S.notifications.find(x => x.id === el.dataset.id); if (!n) return;
+    n.read = true; save(); closePops();
+    go(n.go, () => { if (n.design && getDesign(n.design)) openDesign(n.design); if (n.mat && getMat(n.mat)) openMat(n.mat); });
+  },
+  'notif-read'() { S.notifications.forEach(n => n.read = true); save(); updateChrome(route()); renderNotif(); },
+  async reset() {
+    closePops();
+    const ok = await ask({ title: 'Reset demo data?', text: 'All approvals, requests and decisions will return to the original sample data.', ok: 'Reset', tone: 'danger' });
+    if (!ok) return;
+    if (LINK) { IPCS.client.resetPortal(LINK.pid); LINK = IPCS.client.open(); S = LINK.state; } else { S = clone(SEED); save(); }
+    ui.design = ui.mat = null;
+    if (location.hash !== '#/home') location.hash = '#/home'; else render();
+    toast('Demo data reset');
+  }
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('.pop-wrap')) closePops();
+  const el = e.target.closest('[data-a]');
+  if (el && A[el.dataset.a]) { A[el.dataset.a](el, e); return; }
+  if (e.target.tagName === 'DIALOG' && e.target.id !== 'confirm') e.target.close();   // backdrop click
+});
+
+/* ---------- Forms ---------- */
+const F = {
+  add: addEntry,
+  edit: editEntry,
+  revise(f) {
+    const t = f.elements.c.value.trim(), err = $('.err', f);
+    if (t.length < 5) { err.textContent = 'Please add a short comment.'; err.hidden = false; f.elements.c.focus(); return; }
+    const u = ui.design, d = getDesign(u.id), ver = verOf(d, d.current);
+    d.comments.push({ v: ver.v, text: t, date: today() });
+    ver.status = 'Revision requested'; u.form = false; save();
+    renderDesign(); render(); toast('Revision request saved');
+  },
+  change(f) {
+    const el = f.elements, err = $('.err', f);
+    const title = el.ttl.value.trim(), desc = el.desc.value.trim();
+    const cost = el.cost.value === '' ? 0 : Number(el.cost.value);
+    let m = '';
+    if (!title) m = 'Please add a short title.';
+    else if (!desc) m = 'Please add a short description.';
+    else if (!Number.isFinite(cost) || cost < 0) m = 'Enter a cost of 0 or more.';
+    if (m) { err.textContent = m; err.hidden = false; return; }
+    const file = el.ref && el.ref.files && el.ref.files[0] ? el.ref.files[0].name : '';
+    if (f.dataset.busy) return; f.dataset.busy = '1';   // ignore repeated submits
+    S.changes.unshift({ id: 'c' + Date.now(), title, desc, estimate: Math.round(cost), proposal: null, cost: null, impact: el.impact.value, ref: file, status: 'Under review', history: [{ s: 'Submitted', date: today() }], custom: true });
+    notify('Change request submitted', `${title} · Under studio review`, 'changes');
+    save(); $('#modal').close(); render(); toast('Request submitted. Under studio review');
+  }
+};
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-form]'); if (!f) return;
+  e.preventDefault(); if (F[f.dataset.form]) F[f.dataset.form](f);
+});
+document.addEventListener('change', e => {
+  if (e.target.matches('#modal input[name="o"]') && ui.mat) { ui.mat.sel = e.target.value; renderMat(); const c = $('#modal input[name="o"]:checked'); if (c) c.focus(); }
+});
+
+/* ---------- Global listeners ---------- */
+// image load / error fallback (capture because load/error do not bubble)
+document.addEventListener('load', e => { if (e.target.tagName === 'IMG') e.target.classList.add('loaded'); }, true);
+document.addEventListener('error', e => { if (e.target.tagName === 'IMG') e.target.classList.add('failed'); }, true);
+document.addEventListener('close', e => {
+  sync();
+  if (e.target.id === 'modal') { ui.design = null; ui.mat = null; }
+}, true);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if ($('.pop:not([hidden])')) closePops(); if ($('#side').classList.contains('open')) closeDrawer(); }
+  const lb = $('#lightbox');
+  if (lb.open && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) openLB(ui.lb + (e.key === 'ArrowRight' ? 1 : -1));
+});
+try { mqD.addEventListener('change', sbDefault); mqM.addEventListener('change', () => { if (!mqM.matches) closeDrawer(); syncSide(); }); } catch (e) {}
+
+/* ---------- Shared-data sync: pick client + live refresh when Admin / PM change something ---------- */
+function reloadShared() {
+  const l = IPCS.client.open(); if (!l) return; LINK = l; S = l.state;
+  if (ui.design && !getDesign(ui.design.id)) { ui.design = null; const m = $('#modal'); if (m.open) m.close(); }
+  render(); if (ui.design && $('#modal').open) renderDesign();
+}
+if (LINK) IPCS.onChange(() => { if ($('#confirm').open) return setTimeout(reloadShared, 800); reloadShared(); });
+document.addEventListener('change', e => {
+  if (e.target.matches('[data-ipcs-client]')) { IPCS.client.select(e.target.value); ui.design = ui.mat = null; reloadShared(); closePops(); toast('Switched client view'); }
+});
+
+/* =========================================================
+   9. Boot
+   ========================================================= */
+buildNav(); sbDefault(); syncSide(); render();
+})();
+</script>
+</body>
+</html>
