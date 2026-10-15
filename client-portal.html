@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hearth Studio · Client Portal (Demo)</title>
+<title>Shilpa Interiors · Client Portal (Demo)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -117,8 +117,8 @@ a{color:inherit}
 .page-head{margin:8px 0 26px}
 .page-head h1{font-size:clamp(27px,4.4vw,42px);font-weight:500;letter-spacing:-.025em;line-height:1.12;outline:none}
 .sub{color:var(--muted);margin-top:8px}
-.sec{font-size:20px;font-weight:500;margin:38px 0 14px;letter-spacing:-.01em}
-.eyebrow{font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:14px}
+.sec{font-size:22px;font-weight:500;margin:34px 0 12px;letter-spacing:-.01em}
+.eyebrow{font-size:14.5px;color:var(--ink);font-weight:600;margin-bottom:14px}
 .demo-foot{margin-top:48px;text-align:center;color:var(--muted);font-size:13px}
 
 /* =========================================================
@@ -133,6 +133,7 @@ a{color:inherit}
 .btn.danger{color:var(--rose);border-color:#e6c9c0}
 .btn.danger:hover{background:var(--rose-l)}
 .btn.sm{min-height:40px;padding:0 18px;font-size:14px}
+@media(pointer:coarse){.btn.sm{min-height:44px}}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:500;background:var(--beige-l);color:#5b5446;white-space:nowrap}
@@ -406,15 +407,17 @@ dialog.lb{width:min(1100px,calc(100vw - 24px));background:#1d1c19;color:#fff;bor
 /* ===== Studio upgrade: Home, Budget, Handover ===== */
 .page-head h1,.sec,.hero-bot strong,.stat strong,.fig strong,.pc h3,.rc-b strong{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
 .page-head .sub{max-width:60ch;color:var(--muted);margin-top:8px}
-.sec.first{margin-top:12px}
-.hm{display:grid;gap:12px}
-.hm .hero{min-height:clamp(320px,46vw,460px)}
+.sec.first{margin-top:8px}
+.hm{display:grid;gap:14px}
+.hm>section[aria-label="Next actions"]{background:var(--sage-l);border:1px solid #d3dfce;border-radius:var(--r);padding:4px 18px 18px}
+.hm>section[aria-label="Next actions"] .card.empty{background:#fff}
+.hm .hero{min-height:clamp(180px,24vw,260px)}
 .hero-bot .dates{display:block;margin-top:6px;font-size:14px;opacity:.92}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
 .stat,.fig{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
-.stat .k,.fig .k{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.stat .k,.fig .k{font-size:13px;color:var(--muted)}
 .stat strong{font-size:clamp(21px,2.4vw,26px);line-height:1.2}
-.stat small,.fig small{color:var(--muted);font-size:13px}
+.stat small,.fig small{color:var(--muted);font-size:14px}
 .stat .bar{margin:6px 0 2px}
 .pcs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
 .pc{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
@@ -430,6 +433,7 @@ dialog.lb{width:min(1100px,calc(100vw - 24px));background:#1d1c19;color:#fff;bor
 .rc-b{display:grid;gap:8px;padding:14px 16px 16px;justify-items:start}
 .rc-b strong{font-size:19px}
 .rc-cta{display:inline-flex;align-items:center;gap:4px;color:var(--sage-d);font-weight:500;font-size:14px}
+@media(max-width:560px){.pc{flex-direction:row}.pc .media{flex:0 0 92px;aspect-ratio:auto}.pc-b{flex:1;min-width:0;padding:14px}.pc h3{font-size:19px}.rc .media{aspect-ratio:16/9}.sec{font-size:20px}}
 .tl2{display:grid;gap:0}
 .tl2 li{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
 .tl2 li:last-child{border:0}
@@ -439,12 +443,12 @@ dialog.lb{width:min(1100px,calc(100vw - 24px));background:#1d1c19;color:#fff;bor
 .pgc{display:grid;gap:18px}
 .pgc-h{display:flex;flex-wrap:wrap;gap:20px 44px;align-items:flex-end;justify-content:space-between}
 .pgc-m{display:flex;flex-wrap:wrap;gap:20px 44px}
-.pgc .k{display:block;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pgc .k{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
 .pgc strong{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(20px,2.3vw,24px);line-height:1.2}
 .pgc strong.big{font-size:clamp(42px,6vw,58px);letter-spacing:-.02em;line-height:1}
 .pgc small{color:var(--muted);font-size:13px}
 .pc.need{border-top:3px solid var(--amber)}
-.pc-eb{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pc-eb{font-size:13px;color:var(--muted)}
 .pc-meta{font-size:14px;font-weight:500}
 .sec .chip{vertical-align:middle;margin-left:10px}
 .rp{display:grid;grid-template-columns:minmax(104px,170px) 1fr 46px;gap:14px;align-items:center;padding:10px 0}
@@ -499,8 +503,8 @@ dialog.lb{width:min(1100px,calc(100vw - 24px));background:#1d1c19;color:#fff;bor
 <div class="app" id="app">
   <aside class="side" id="side" aria-label="Main navigation">
     <div class="brand">
-      <span class="mark" aria-hidden="true">H</span>
-      <span class="lbl">Hearth Studio</span>
+      <span class="mark" aria-hidden="true">S</span>
+      <span class="lbl">Shilpa Interiors</span>
       <button class="icon-btn drawer-x" data-a="drawer-close" aria-label="Close menu"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
     <nav id="nav" aria-label="Sections"></nav>
@@ -1070,9 +1074,8 @@ function vHome() {
   <div class="hm">
     <article class="hero" aria-label="Project overview">
       ${media(S.hero, 'Modern apartment interior', 1600)}
-      <div class="hero-top"><span class="chip glass">Phase: ${esc(S.stage)}</span></div>
       <div class="hero-bot"><span class="loc">${ic('i-pin')} ${esc(P.location)}</span><strong>${esc(P.name)}'s ${esc(P.project)}</strong>
-        <span class="dates">${pd.start || pd.end ? [pd.start && 'Started ' + fmtDate(pd.start), pd.end && 'Estimated completion ' + fmtDate(pd.end)].filter(Boolean).join(' · ') : 'Project dates to be confirmed'}</span></div>
+        <span class="dates">${pd.start ? 'Started ' + fmtDate(pd.start) : ''}</span></div>
     </article>
     <section class="card pgc" aria-label="Overall project progress">
       <div class="pgc-h"><div><span class="k">Overall completion</span><strong class="big">${p}%</strong></div>
@@ -1080,25 +1083,26 @@ function vHome() {
           <div><span class="k">Expected completion</span><strong>${pd.end ? fmtDate(pd.end) : 'To be confirmed'}</strong></div></div></div>
       <div class="bar tall" role="progressbar" aria-label="Overall completion" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
     </section>
-    <section aria-label="Next actions"><h2 class="sec first">Needs your attention${acts.length ? `<span class="chip warn">${acts.length}</span>` : ''}</h2>
+    <section aria-label="Next actions"><h2 class="sec first">Needs your decision${acts.length ? `<span class="chip warn">${acts.length}</span>` : ''}</h2>
       ${acts.length ? `<div class="pcs">${acts.map(pendCard).join('')}</div>` : `<div class="card empty">You're all caught up. Nothing needs your decision right now.</div>`}
     </section>
-    <section aria-label="Room progress"><h2 class="sec">Progress by room</h2>
-      <div class="card">${S.rooms.map(r => `<div class="rp"><span>${esc(r.room)}</span><div class="bar" role="progressbar" aria-label="${esc(r.room)} progress" aria-valuenow="${r.pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${r.pct}%"></i></div><strong>${r.pct}%</strong></div>`).join('')}
+    <div class="duo">
+      <section class="card" aria-label="Up next"><h2 class="eyebrow">Up next</h2>
+        ${nx.length ? `<ol class="tl2">${nx.map(x => `<li><i></i><div><strong>${esc(x.t)}</strong><small>${esc(x.s)}</small></div><time>${fmtDate(x.d, true)}</time></li>`).join('')}</ol>` : `<p class="muted">Nothing scheduled yet. Your design team will add the next steps here.</p>`}</section>
+      <section class="card" aria-label="Room progress"><h2 class="eyebrow">Site progress by room</h2>
+      <div>${S.rooms.map(r => `<div class="rp"><span>${esc(r.room)}</span><div class="bar" role="progressbar" aria-label="${esc(r.room)} progress" aria-valuenow="${r.pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${r.pct}%"></i></div><strong>${r.pct}%</strong></div>`).join('')}
         <button class="btn sm" data-a="go" data-go="progress" style="margin-top:10px">View site progress</button></div>
     </section>
+    </div>
+    <section aria-label="Payments"><h2 class="sec">Payments</h2><div class="stats"><div class="stat"><span class="k">Outstanding balance</span><strong>${inr(balanceDue())}</strong><small>Next payment: ${due ? inr(due.amount) + ' · ' + esc(due.label) + (fmtDate(due.date, true) ? ', due ' + fmtDate(due.date, true) : '') : 'none due'}</small>${pendingTotal() ? `<small>${inr(pendingTotal())} in pending proposals, not included</small>` : ''}</div></div></section>
     <div class="duo">
       <section class="card" aria-label="Materials status"><h2 class="eyebrow">Materials</h2>
         <ul class="ms">${S.materials.map(m => `<li><div><strong>${esc(m.name)}</strong><small>${esc(selOpt(m).name)}</small></div>${chip(m.status)}</li>`).join('')}</ul>
         <button class="btn sm" data-a="go" data-go="materials" style="margin-top:14px">View all materials</button></section>
-      <section class="card" aria-label="Up next"><h2 class="eyebrow">Up next</h2>
-        ${nx.length ? `<ol class="tl2">${nx.map(x => `<li><i></i><div><strong>${esc(x.t)}</strong><small>${esc(x.s)}</small></div><time>${fmtDate(x.d, true)}</time></li>`).join('')}</ol>` : `<p class="muted">Nothing scheduled yet. Your design team will add the next steps here.</p>`}</section>
+      <section class="card" aria-label="Recent activity"><h2 class="eyebrow">Recent activity</h2>
+      ${ev.length ? `<ol class="tl2">${ev.map(x => `<li><i></i><div><strong>${esc(x.t)}</strong><small>${esc(x.s)}</small></div><time>${x.d ? fmtDate(x.d, true) : ''}</time></li>`).join('')}</ol>` : `<p class="muted">No activity yet. Updates will appear here as your project moves forward.</p>`}</section>
     </div>
     <section aria-label="Room designs"><h2 class="sec">Room designs</h2><div class="rcs">${S.designs.map(roomCard).join('')}</div></section>
-    <section class="card" aria-label="Recent activity"><h2 class="eyebrow">Recent activity</h2>
-      ${ev.length ? `<ol class="tl2">${ev.map(x => `<li><i></i><div><strong>${esc(x.t)}</strong><small>${esc(x.s)}</small></div><time>${x.d ? fmtDate(x.d, true) : ''}</time></li>`).join('')}</ol>` : `<p class="muted">No activity yet. Updates will appear here as your project moves forward.</p>`}
-      <button class="btn sm" data-a="go" data-go="progress" style="margin-top:14px">View site progress</button></section>
-    <section class="stats" aria-label="Payments"><div class="stat"><span class="k">Outstanding balance</span><strong>${inr(balanceDue())}</strong><small>Next payment: ${due ? inr(due.amount) + ' · ' + esc(due.label) + (fmtDate(due.date, true) ? ', due ' + fmtDate(due.date, true) : '') : 'none due'}</small>${pendingTotal() ? `<small>${inr(pendingTotal())} in pending proposals, not included</small>` : ''}</div></section>
   </div>`;
 }
 
@@ -1409,7 +1413,7 @@ function buildNav() {
 function updateChrome(k) {
   const c = counts(), item = NAV.find(n => n[0] === k);
   $('#crumb').textContent = item[1];
-  document.title = `${item[1]} · Hearth Studio (Demo)`;
+  document.title = `${item[1]} · Shilpa Interiors (Demo)`;
   $$('.nav-item').forEach(a => {
     const on = a.dataset.nav === k;
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');

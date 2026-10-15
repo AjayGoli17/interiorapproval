@@ -7,27 +7,27 @@
 <!-- Fonts are optional: if offline, the system font stack is used. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- =====================================================================
      STYLES  (split into css/styles.css later if you wish)
      ===================================================================== -->
 <style>
 :root{
-  --bg:#f6f4ef; --surface:#fff; --ink:#24241f; --ink-2:#4b4a43; --muted:#7a786f;
-  --line:#e8e5dc; --line-2:#f0ede5;
-  --accent:#4b5e3c; --accent-d:#3d4e30; --accent-soft:#ebefe3; --sand:#d4c4a3;
+  --bg:#F7F5F0; --surface:#fff; --ink:#2A2A28; --ink-2:#4b4a43; --muted:#6B675F;
+  --line:#E7E2D8; --line-2:#f0ede5;
+  --accent:#5C7460; --accent-d:#4A6050; --accent-soft:#E7EDE4; --sand:#d4c4a3;
   --ok:#4b7a4f; --ok-bg:#e7f0e5; --warn:#9a6a14; --warn-bg:#fbf0d9;
   --bad:#b0443a; --bad-bg:#f9e5e1; --info:#44677f; --info-bg:#e3edf3; --neutral:#6b6a62; --neutral-bg:#efede6;
-  --r:12px; --r-sm:8px;
+  --r:14px; --r-sm:8px;
   --shadow:0 1px 2px rgba(36,36,31,.04);
   --sb:248px; --sb-c:68px; --top:60px;
-  --font:Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --serif:Newsreader,Georgia,"Times New Roman",serif;
+  --font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --serif:Fraunces,Georgia,"Times New Roman",serif;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.45 var(--font);-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -43,9 +43,9 @@ h1,h2,h3,p{margin:0}
 .ws-name{font-weight:600;line-height:1.2}
 .ws-sub{font-size:12px;color:var(--muted)}
 .nav{flex:1;overflow-y:auto;padding:4px 10px 12px}
-.nav-group{margin-top:14px}
-.nav-group-title{font-size:12px;color:var(--muted);padding:0 10px 6px}
-.nav-item{display:flex;align-items:center;gap:11px;height:38px;padding:0 10px;border-radius:var(--r-sm);color:var(--ink-2);position:relative;white-space:nowrap}
+.nav-group{margin-top:20px}
+.nav-group-title{font-size:12.5px;font-weight:600;color:var(--muted);padding:0 10px 8px}
+.nav-item{display:flex;align-items:center;gap:11px;height:42px;padding:0 10px;border-radius:var(--r-sm);color:var(--ink-2);position:relative;white-space:nowrap}
 .nav-item:hover{background:var(--bg)}
 .nav-item[aria-current="page"]{background:var(--accent-soft);color:var(--accent-d);font-weight:500}
 .nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:600;min-width:19px;height:19px;padding:0 6px;border-radius:999px;display:grid;place-items:center}
@@ -93,9 +93,9 @@ body.sb-collapsed .main{margin-left:var(--sb-c)}
 
 /* ---------- Page + shared components ---------- */
 .page{padding:24px;max-width:1280px;margin:0 auto;container-type:inline-size;outline:0}
-.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
-.page-head h2{font-family:var(--serif);font-weight:500;font-size:26px;letter-spacing:-.01em}
-.page-head p{color:var(--muted);margin-top:2px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.page-head h2{font-family:var(--serif);font-weight:500;font-size:30px;letter-spacing:-.01em}
+.page-head p{color:var(--muted);margin-top:2px;max-width:62ch}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 15px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);font-weight:500;white-space:nowrap}
 .btn:hover{background:var(--bg)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
