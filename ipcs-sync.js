@@ -26,8 +26,12 @@
   const rid = () => Date.now() + Math.random().toString(36).slice(2, 6);
   const arr = v => (Array.isArray(v) ? v : []);
 
+  let syncChan = null;
+  try { if (typeof BroadcastChannel !== 'undefined') syncChan = new BroadcastChannel('ipcs_sync'); } catch (e) {}
+  function broadcastSync() { try { if (syncChan) syncChan.postMessage({ type: 'sync', key: KEY }); } catch (e) {} }
+
   function read() { try { const o = JSON.parse(localStorage.getItem(KEY)); return o && o.v === 2 && Array.isArray(o.projects) ? o : null; } catch (e) { return null; } }
-  function write(c) { try { localStorage.setItem(KEY, J(c)); return true; } catch (e) { return false; } }
+  function write(c) { try { localStorage.setItem(KEY, J(c)); broadcastSync(); return true; } catch (e) { return false; } }
 
   /* ---- same side effects the Admin panel produces (activity feed + notification bell) ---- */
   const log = (c, type, text, pid) => { (c.activity = arr(c.activity)).unshift({ id: 'A-' + rid(), type, text, projectId: pid, at: new Date().toISOString() }); };
@@ -110,8 +114,8 @@
       if (!s) { (c.suppliers = arr(c.suppliers)).push(s = { id: nid('S-', c.suppliers), name: r.supplierName, category: 'General', area: '-', contact: '-', phone: '', custom: true }); } r.supplierId = s.id; };
     return {
       t: { pre: 'TK-',
-        mk: n => ({ projectId: n.p, progress: 0, custom: true }),
-        toC: n => ({ title: n.t, room: n.r, assignee: tid(n.o), priority: PRI_C[n.pr] || 'Medium', status: T_C[n.s] || 'To do', blocked: n.s === 'blocked', auto: !!n.auto, due: n.d, designId: n.ds || '', materialId: n.m || '' }),
+        mk: n => ({ projectId: n.p, progress: 0, custom: true, desc: n.desc || '' }),
+        toC: n => ({ title: n.t, room: n.r, assignee: tid(n.o), priority: PRI_C[n.pr] || 'Medium', status: T_C[n.s] || 'To do', blocked: n.s === 'blocked', auto: !!n.auto, due: n.d, designId: n.ds || '', materialId: n.m || '', desc: n.desc || '' }),
         after(r, n, ch) {
           if (!ch || ch.status) r.progress = r.status === 'Done' ? 100 : r.status === 'To do' ? 0 : Math.max(40, r.progress > 0 && r.progress < 100 ? r.progress : 50);
           if (!ch) { log(c, 'task', `Task added: ${r.title}`, r.projectId); notify(c, 'task', `New task: ${r.title}, ${(proj(c, r.projectId) || {}).name}`, r.projectId, '#site?tab=tasks&p=' + r.projectId); }
@@ -143,10 +147,10 @@
     open() {
       const c = read(); if (!c) return null;
       const only = new URLSearchParams(location.search).get('pm');
-      const ps = c.projects.filter(p => !p.archived && ['active', 'on_hold'].includes(p.status) && (!only || p.pmId === only)), ids = new Set(ps.map(p => p.id));
+      const ps = c.projects.filter(p => !p.archived && ['active', 'on_hold'].includes(p.status) && (!only || p.pmId === only || c.tasks.some(t => t.projectId === p.id && t.assignee === only))), ids = new Set(ps.map(p => p.id));
       const S = { p: ps.map(p => pmProj(c, p)), cl: {}, ucl: {}, t: [], d: [], m: [], i: [] };
-      S.t = c.tasks.filter(x => ids.has(x.projectId)).map(x => ({ id: x.id, t: x.title, p: x.projectId, r: x.room || '-', o: team(c, x.assignee).name || 'Unassigned', pr: PRI_N[x.priority] || 'Med', d: x.due,
-        s: x.status === 'Done' ? 'done' : x.blocked ? 'blocked' : x.status === 'In progress' ? 'prog' : 'todo', ds: x.designId || '', m: x.materialId || '', custom: !!x.custom, ...(x.auto ? { auto: 1 } : {}) }));
+      S.t = c.tasks.filter(x => ids.has(x.projectId) && (!only || x.assignee === only || (proj(c, x.projectId) || {}).pmId === only)).map(x => ({ id: x.id, t: x.title, p: x.projectId, r: x.room || '-', o: team(c, x.assignee).name || 'Unassigned', pr: PRI_N[x.priority] || 'Med', d: x.due,
+        s: x.status === 'Done' ? 'done' : x.blocked ? 'blocked' : x.status === 'In progress' ? 'prog' : 'todo', ds: x.designId || '', m: x.materialId || '', desc: x.desc || '', custom: !!x.custom, ...(x.auto ? { auto: 1 } : {}) }));
       S.d = c.designs.filter(x => ids.has(x.projectId)).map(x => ({ id: x.id, t: x.title || x.room, p: x.projectId, v: 'v' + x.version, s: D_N[x.status] || 'prep', f: x.note || '', r: x.room, custom: !!x.custom }));
       S.m = c.pos.filter(x => ids.has(x.projectId)).map(x => ({ id: x.id, n: x.item, p: x.projectId, r: x.room || '-', sp: x.supplierName || ((c.suppliers || []).find(s => s.id === x.supplierId) || {}).name || '-', q: x.qtyText || `${x.qty} ${x.unit}`, e: x.expected,
         s: x.status === 'Delivered' ? 'delivered' : x.status === 'Delayed' ? 'delayed' : x.partial ? 'partial' : x.toOrder ? 'toorder' : 'ordered', custom: !!x.custom }));
@@ -295,7 +299,16 @@
   };
 
   /* live refresh: another panel / tab wrote the shared store */
-  function onChange(cb) { let t; G.addEventListener('storage', e => { if (e.key === KEY || e.key === null) { clearTimeout(t); t = setTimeout(cb, 60); } }); }
+  function onChange(cb) {
+    let t;
+    const trigger = () => { clearTimeout(t); t = setTimeout(cb, 50); };
+    G.addEventListener('storage', e => { if (e.key === KEY || e.key === null) trigger(); });
+    if (syncChan) {
+      syncChan.addEventListener('message', e => {
+        if (e && e.data && e.data.key === KEY) trigger();
+      });
+    }
+  }
 
   G.IPCS = { KEY, read, pm: PM, client: CL, onChange, connected: () => !!read() };
 })(window);

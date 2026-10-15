@@ -14,14 +14,19 @@
      ===================================================================== -->
 <style>
 :root{
-  --bg:#F7F5F0; --surface:#fff; --ink:#2A2A28; --ink-2:#4b4a43; --muted:#6B675F;
-  --line:#E7E2D8; --line-2:#f0ede5;
-  --accent:#5C7460; --accent-d:#4A6050; --accent-soft:#E7EDE4; --sand:#d4c4a3;
-  --ok:#4b7a4f; --ok-bg:#e7f0e5; --warn:#9a6a14; --warn-bg:#fbf0d9;
-  --bad:#b0443a; --bad-bg:#f9e5e1; --info:#44677f; --info-bg:#e3edf3; --neutral:#6b6a62; --neutral-bg:#efede6;
-  --r:14px; --r-sm:8px;
-  --shadow:0 1px 2px rgba(36,36,31,.04);
-  --sb:248px; --sb-c:68px; --top:60px;
+  --bg:#F8F7F4; --surface:#FFFFFF; --surface-raised:#FFFFFF; --surface-subtle:#F4F1EA;
+  --ink:#1C201D; --ink-2:#3E4440; --muted:#6F7671;
+  --line:#E6E2D8; --line-2:#F0ECE3;
+  --accent:#1C3829; --accent-d:#12251B; --accent-soft:#EBF2EC; --accent-subtle:#DCE7DE;
+  --sand:#C9BAA3; --sand-soft:#F6F3EE;
+  --ok:#2D6843; --ok-bg:#EDF5F0; --warn:#8C5D16; --warn-bg:#FDF5E7;
+  --bad:#A83A2E; --bad-bg:#FDF0EE; --info:#355B75; --info-bg:#EDF3F7; --neutral:#5F6661; --neutral-bg:#F0F2EF;
+  --r:12px; --r-sm:7px; --r-lg:16px;
+  --shadow-sm:0 1px 2px rgba(28,34,30,.03);
+  --shadow:0 1px 3px rgba(28,34,30,.04), 0 4px 12px rgba(28,34,30,.025);
+  --shadow-card:0 1px 3px rgba(28,34,30,.04), 0 6px 18px rgba(28,34,30,.035);
+  --shadow-hover:0 4px 14px rgba(28,34,30,.08), 0 14px 30px rgba(28,34,30,.05);
+  --sb:252px; --sb-c:68px; --top:62px;
   --font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --serif:Fraunces,Georgia,"Times New Roman",serif;
 }
@@ -123,7 +128,75 @@ body.sb-collapsed .main{margin-left:var(--sb-c)}
 .empty b{display:block;color:var(--ink);font-weight:600;margin-bottom:4px}
 .empty .btn{margin-top:12px}
 
-/* ---------- Overview ---------- */
+/* ---------- Redesigned Overview & Architecture Studio Styling ---------- */
+.overview-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.overview-hero h2{font-family:var(--serif);font-weight:500;font-size:32px;letter-spacing:-.015em;line-height:1.15;color:var(--ink)}
+.overview-hero p{color:var(--muted);margin-top:4px;font-size:14px}
+.hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.biz-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.biz-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;transition:border-color .15s,transform .15s,box-shadow .15s;text-decoration:none;color:inherit;position:relative}
+.biz-card:hover{border-color:#D4CFBF;transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.biz-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.biz-ic{width:32px;height:32px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.biz-ic.bad{background:var(--bad-bg);color:var(--bad)}.biz-ic.warn{background:var(--warn-bg);color:var(--warn)}
+.biz-val{font-family:var(--serif);font-size:34px;font-weight:500;line-height:1.1;letter-spacing:-.015em;color:var(--ink);margin:4px 0 2px}
+.biz-sub{font-size:13px;color:var(--muted);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.overview-projects-sec{margin-bottom:26px}
+.op-sec-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.op-sec-title{font-family:var(--serif);font-size:22px;font-weight:500;display:flex;align-items:center;gap:10px;color:var(--ink)}
+.op-sec-title .op-count{font-family:var(--font);font-size:12px;font-weight:600;background:var(--accent-soft);color:var(--accent);padding:2px 9px;border-radius:999px}
+.op-sec-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.op-stage-filters{display:flex;gap:6px;overflow-x:auto;padding:2px 0}
+.stage-pill{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.stage-pill:hover{background:var(--bg);border-color:#D4CFBF}
+.stage-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:18px}
+
+.op-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.op-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:#D4CFBF}
+.op-media{position:relative;aspect-ratio:16/9;background:var(--line-2);overflow:hidden}
+.op-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.op-card:hover .op-media img{transform:scale(1.03)}
+.op-badges{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:2}
+.op-stage-badge{background:rgba(24,30,26,.82);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:500;letter-spacing:.02em}
+.op-health-badge{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+.op-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+.op-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.op-name{font-family:var(--serif);font-size:18px;font-weight:500;line-height:1.25;margin:0;color:var(--ink)}
+.op-client{font-size:13px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px}
+.op-prog-wrap{display:flex;flex-direction:column;gap:5px;margin:2px 0}
+.op-prog-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.op-prog-lbl b{color:var(--ink);font-weight:600}
+.op-meta-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:10px 12px;background:var(--bg);border-radius:var(--r-sm);font-size:12.5px}
+.op-pm{display:flex;align-items:center;gap:8px;min-width:0}
+.op-pm .av{width:28px;height:28px;font-size:11px;flex:none;background:var(--sand);color:#2E281C;font-weight:600;border-radius:50%;display:grid;place-items:center}
+.op-pm-text{min-width:0;line-height:1.25}
+.op-pm-text b{display:block;font-weight:500;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op-pm-text small{font-size:11px;color:var(--muted)}
+.op-due{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.25;text-align:right}
+.op-due b{font-weight:500;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op-due small{font-size:11px;color:var(--muted)}
+.op-due small.late{color:var(--bad);font-weight:600}
+.op-flag{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:500}
+.op-flag.bad{background:var(--bad-bg);color:var(--bad)}
+.op-flag.warn{background:var(--warn-bg);color:var(--warn)}
+.op-flag.ok{background:var(--ok-bg);color:var(--ok)}
+.op-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line-2)}
+
+.overview-lower{display:grid;grid-template-columns:7fr 5fr;gap:18px;margin-bottom:24px}
+.att-list{display:flex;flex-direction:column;gap:8px}
+.att-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--surface);color:inherit;transition:background .15s,border-color .15s}
+a.att-item:hover{background:var(--bg);border-color:#D4CFBF}
+.att-badge{flex:none;margin-top:1px}
+.att-main{flex:1;min-width:0;line-height:1.35}
+.att-main b{display:block;font-weight:600;font-size:13.5px;color:var(--ink);margin-bottom:2px}
+.att-main p{font-size:12.5px;color:var(--muted);margin:0}
+.att-arrow{color:var(--muted);flex:none;font-size:14px;margin-left:4px}
+
+/* Legacy overview metrics (used by other sub-screens) */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .metric{display:flex;flex-direction:column;gap:2px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
 .metric:hover{border-color:#c9c5b6}
@@ -203,6 +276,10 @@ a.li:hover{background:var(--bg)}
 @keyframes tin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ---------- Container-based responsiveness ---------- */
+@container (max-width:1024px){
+  .biz-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .overview-lower{grid-template-columns:1fr}
+}
 @container (max-width:900px){ .r-5-7,.r-7-5{grid-template-columns:1fr} }
 @container (max-width:700px){
   .metrics{grid-template-columns:repeat(2,1fr)}
@@ -211,6 +288,15 @@ a.li:hover{background:var(--bg)}
   .prow{grid-template-columns:44px 1fr auto;gap:12px}
   .prow .hide-sm{display:none}
   .sm-only{display:block!important}
+}
+@container (max-width:680px){
+  .biz-summary{grid-template-columns:1fr}
+  .op-grid{grid-template-columns:1fr}
+  .op-meta-row{grid-template-columns:1fr;gap:8px}
+  .op-due{text-align:left}
+  .overview-hero{flex-direction:column;align-items:flex-start}
+  .hero-actions{width:100%}
+  .hero-actions .btn{flex:1}
 }
 @container (max-width:380px){ .metrics{grid-template-columns:1fr} .m-val{font-size:28px} }
 
@@ -640,7 +726,7 @@ a.cv-li:hover{background:var(--bg)}
     <h1 class="page-title" id="pageTitle">Business Overview</h1>
     <div class="search" id="search">
       <span class="s-ic" id="searchIc"></span>
-      <input id="searchInput" type="search" placeholder="Search projects and clients" autocomplete="off" aria-label="Global search">
+      <input id="searchInput" type="search" placeholder="Search projects, clients, tasks..." autocomplete="off" aria-label="Global search">
       <div class="results" id="results" role="listbox"></div>
     </div>
     <span class="spacer"></span>
@@ -649,8 +735,8 @@ a.cv-li:hover{background:var(--bg)}
       <button class="btn primary btn-new" data-menu="quick" aria-haspopup="true"><span id="plusIc"></span><span class="lbl">Create</span></button>
       <div class="menu" id="quickMenu">
         <button class="menu-item" data-action="new-project"><span data-i="folder"></span>New project</button>
+        <button class="menu-item" data-action="t-newtask"><span data-i="hammer"></span>Assign task to PM</button>
         <button class="menu-item" data-action="c-add"><span data-i="user"></span>New client</button>
-        <button class="menu-item" data-action="t-newtask"><span data-i="hammer"></span>New site task</button>
         <button class="menu-item" data-action="po-new"><span data-i="package"></span>New purchase order</button>
       </div>
     </div>
@@ -881,15 +967,26 @@ function seed() {
       notify: { approval: true, delay: true, task: true, procurement: true, payment: true, change: true } } };
 }
 
-/* ---- localStorage persistence ---- */
+/* ---- localStorage persistence & real-time sync ---- */
 const KEY = 'ipcs.demo.v2';
 let staleShared = false;   /* another panel wrote the shared store while a modal was open */
+let syncChan = null;
+try { if (typeof BroadcastChannel !== 'undefined') syncChan = new BroadcastChannel('ipcs_sync'); } catch (e) {}
+function broadcastSync() { try { if (syncChan) syncChan.postMessage({ type: 'sync', key: KEY }); } catch (e) {} }
+
 let S = load();
 function load() {
   try { const r = localStorage.getItem(KEY); if (r) { const o = JSON.parse(r); if (o && o.v === 2 && Array.isArray(o.projects)) return o; } } catch (e) { /* fall through to seed */ }
   return seed();
 }
-function persist() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Browser storage is unavailable. Changes will be lost on refresh.', 'error'); } }
+function persist() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(S));
+    broadcastSync();
+  } catch (e) {
+    toast('Browser storage is unavailable. Changes will be lost on refresh.', 'error');
+  }
+}
 
 /* ---- Selectors / domain logic (single source of truth for all metrics) ---- */
 const P = () => S.projects.filter(p => !p.archived);
@@ -1020,7 +1117,7 @@ function syncAlerts() {
 const DEF = {
   projects: () => ({ q: '', f: 'active', stage: '', view: 'grid', id: '' }), team: () => ({ q: '' }), clients: () => ({ q: '', type: '', health: '' }),
   design: () => ({ p: '', status: '', q: '' }), procurement: () => ({ tab: 'materials', p: '', status: '', q: '', cat: '' }), site: () => ({ tab: 'tasks', p: '', status: '', asg: '', q: '' }),
-  finance: () => ({ tab: 'budgets', p: '', cat: '', st: '', q: '' }), timeline: () => ({ p: '', only: '' }), reports: () => ({ ds: 'projects' }), notifications: () => ({ f: 'all' }), settings: () => ({}), overview: () => ({})
+  finance: () => ({ tab: 'budgets', p: '', cat: '', st: '', q: '' }), timeline: () => ({ p: '', only: '' }), reports: () => ({ ds: 'projects' }), notifications: () => ({ f: 'all' }), settings: () => ({}), overview: () => ({ stage: 'all' })
 };
 const UI = {}; let curId = 'overview', cur = null;
 const tabs = (items, v, k = 'tab') => `<div class="tabs" role="tablist">${items.map(([val, l, n]) => `<button class="tab" role="tab" aria-selected="${val === v}" data-action="tab" data-k="${k}" data-v="${val}">${l}${n != null ? `<em>${n}</em>` : ''}</button>`).join('')}</div>`;
@@ -1086,84 +1183,284 @@ const ACT = {}, CHG = {};
 /* ============================== OVERVIEW ============================== */
 function attention() {
   const out = [];
+  // 1. Overdue site tasks (highest operational priority)
+  S.tasks.forEach(t => {
+    const p = projectById(t.projectId);
+    if (p && !p.archived && t.status !== 'Done') {
+      const d = daysUntil(t.due);
+      if (d < 0) {
+        out.push({
+          p, sev: 0, cls: 'bad', tag: 'Overdue task',
+          msg: `"${t.title}" (${t.room}) · ${plural(-d, 'day')} late · Assigned to ${memberName(t.assignee)}`,
+          href: '#site?tab=tasks&p=' + p.id
+        });
+      }
+    }
+  });
+
+  // 2. Delayed or slipping projects
   P().forEach(p => {
     const h = health(p), d = inDays(p);
-    if (h.key === 'delayed') out.push({ p, sev: 0, cls: 'bad', tag: 'Delayed', msg: `Handover date passed ${plural(-d, 'day')} ago, ${p.progress}% complete` });
-    else if (h.key === 'risk') out.push({ p, sev: 1, cls: 'warn', tag: 'At risk', msg: `Handover in ${plural(d, 'day')}, only ${p.progress}% complete` });
+    if (h.key === 'delayed') {
+      out.push({ p, sev: 0, cls: 'bad', tag: 'Delayed project', msg: `Handover passed ${plural(-d, 'day')} ago (${p.progress}% complete)`, href: '#projects?id=' + p.id });
+    } else if (h.key === 'risk') {
+      out.push({ p, sev: 1, cls: 'warn', tag: 'At risk', msg: `Handover in ${plural(d, 'day')}, only ${p.progress}% complete`, href: '#projects?id=' + p.id });
+    }
     if (p.status === 'active' && p.stage === 'Client Approval' && p.approvalSince) {
       const w = -daysUntil(p.approvalSince);
-      if (w >= 5) out.push({ p, sev: 1, cls: 'warn', tag: 'Awaiting client', msg: `Client decision pending for ${plural(w, 'day')}` });
+      if (w >= 3) {
+        out.push({ p, sev: 1, cls: 'warn', tag: 'Client decision', msg: `Awaiting client approval for ${plural(w, 'day')}`, href: '#design?p=' + p.id });
+      }
     }
-    if (p.status === 'on_hold') out.push({ p, sev: 2, cls: '', tag: 'On hold', msg: `Paused at ${p.stage}, ${p.progress}% complete` });
+    if (p.status === 'on_hold') {
+      out.push({ p, sev: 2, cls: '', tag: 'On hold', msg: `Paused at ${p.stage}, ${p.progress}% complete`, href: '#projects?id=' + p.id });
+    }
   });
-  S.invoices.forEach(i => { const p = projectById(i.projectId); if (p && !p.archived && invSt(i).k === 'overdue') out.push({ p, sev: 1, cls: 'warn', tag: 'Payment overdue', msg: `${i.id}, ${lk(i.amount - invPaid(i))} overdue by ${plural(-daysUntil(i.due), 'day')}`, href: '#finance?tab=invoices&st=overdue' }); });
-  S.pos.forEach(o => { const p = projectById(o.projectId); if (p && !p.archived && o.status === 'Delayed') out.push({ p, sev: 1, cls: 'warn', tag: 'Delivery late', msg: `${o.item} delayed`, href: '#procurement?status=Delayed' }); });
-  S.changes.forEach(c => { const p = projectById(c.projectId); if (p && !p.archived && c.status === 'Pending') out.push({ p, sev: 2, cls: 'info', tag: 'Change request', msg: c.title, href: '#site?tab=changes' }); });
+
+  // 3. Unresolved high-severity site issues
+  S.issues.forEach(i => {
+    const p = projectById(i.projectId);
+    if (p && !p.archived && i.status === 'Open' && i.severity === 'High') {
+      out.push({ p, sev: 0, cls: 'bad', tag: 'Site issue', msg: `${i.title} (${i.room}) · High severity`, href: '#site?tab=issues&p=' + p.id });
+    }
+  });
+
+  // 4. Overdue payments
+  S.invoices.forEach(i => {
+    const p = projectById(i.projectId);
+    if (p && !p.archived && invSt(i).k === 'overdue') {
+      const d = -daysUntil(i.due);
+      out.push({ p, sev: 1, cls: 'warn', tag: 'Payment overdue', msg: `${i.id}: ${lk(i.amount - invPaid(i))} overdue by ${plural(d, 'day')}`, href: '#finance?tab=invoices&st=overdue' });
+    }
+  });
+
+  // 5. Delayed materials
+  S.pos.forEach(o => {
+    const p = projectById(o.projectId);
+    if (p && !p.archived && o.status === 'Delayed') {
+      out.push({ p, sev: 2, cls: 'warn', tag: 'Delivery delayed', msg: `${o.item} delayed from ${o.supplierName || 'supplier'}`, href: '#procurement?status=Delayed' });
+    }
+  });
+
+  // 6. Pending change requests
+  S.changes.forEach(c => {
+    const p = projectById(c.projectId);
+    if (p && !p.archived && c.status === 'Pending') {
+      out.push({ p, sev: 2, cls: 'info', tag: 'Change request', msg: `"${c.title}" awaiting review (+${lk(c.amount)})`, href: '#site?tab=changes' });
+    }
+  });
+
   return out.sort((a, b) => a.sev - b.sev);
+}
+
+function overviewProjectCard(p) {
+  const h = health(p);
+  const pm = S.team.find(t => t.id === p.pmId) || { name: memberName(p.pmId), role: 'Project Manager' };
+  const d = inDays(p);
+  const dueDt = fmtDate(p.handoverOn, false);
+  const dueTag = d < 0 ? `${-d}d late` : d === 0 ? 'Today' : `${d}d left`;
+  const isLate = d < 0;
+
+  let flagHtml = '';
+  const lateTasks = S.tasks.filter(t => t.projectId === p.id && t.status !== 'Done' && daysUntil(t.due) < 0).length;
+  const sentDes = S.designs.filter(x => x.projectId === p.id && x.status === 'Sent').length;
+  const delayedPo = S.pos.filter(o => o.projectId === p.id && o.status === 'Delayed').length;
+  const highIssues = S.issues.filter(i => i.projectId === p.id && i.status === 'Open' && i.severity === 'High').length;
+
+  if (p.status === 'on_hold') {
+    flagHtml = `<div class="op-flag warn">${icon('pause', 13)}<span>Project on hold at ${esc(p.stage)}</span></div>`;
+  } else if (isLate) {
+    flagHtml = `<div class="op-flag bad">${icon('alert', 13)}<span>Handover delayed by ${plural(-d, 'day')}</span></div>`;
+  } else if (lateTasks > 0) {
+    flagHtml = `<div class="op-flag bad">${icon('alert', 13)}<span>${plural(lateTasks, 'task')} overdue on site</span></div>`;
+  } else if (highIssues > 0) {
+    flagHtml = `<div class="op-flag bad">${icon('alert', 13)}<span>High-severity snag on site</span></div>`;
+  } else if (sentDes > 0) {
+    flagHtml = `<div class="op-flag warn">${icon('pen', 13)}<span>${plural(sentDes, 'design')} awaiting client approval</span></div>`;
+  } else if (delayedPo > 0) {
+    flagHtml = `<div class="op-flag warn">${icon('package', 13)}<span>Material shipment delayed</span></div>`;
+  } else if (h.key === 'risk') {
+    flagHtml = `<div class="op-flag warn">${icon('clock', 13)}<span>Tight timeline (${d}d left, ${p.progress}%)</span></div>`;
+  } else {
+    flagHtml = `<div class="op-flag ok">${icon('checkCircle', 13)}<span>On track for handover on ${dueDt}</span></div>`;
+  }
+
+  return `<article class="op-card">
+    <div class="op-media">
+      ${projImg(p)}
+      <div class="op-badges">
+        <span class="op-stage-badge">${esc(p.stage)}</span>
+        <span class="badge ${h.cls} op-health-badge">${esc(h.label)}</span>
+      </div>
+    </div>
+    <div class="op-body">
+      <div class="op-title-row">
+        <div>
+          <h3 class="op-name">${esc(p.name)}</h3>
+          <div class="op-client">${icon('user', 13)}<span>${esc(clientName(p.clientId))}</span> · ${icon('pin', 12)}<span>${esc(p.location)}</span></div>
+        </div>
+      </div>
+      <div class="op-prog-wrap">
+        <div class="op-prog-lbl"><span>Progress</span><b>${p.progress}%</b></div>
+        <div class="bar op-bar"><i style="width:${p.progress}%;background:${hcolor(h)}"></i></div>
+      </div>
+      <div class="op-meta-row">
+        <div class="op-pm">
+          <span class="av">${vbInitials(pm.name)}</span>
+          <div class="op-pm-text">
+            <b>${esc(pm.name)}</b>
+            <small>${esc(pm.role || 'Project Lead')}</small>
+          </div>
+        </div>
+        <div class="op-due">
+          <b>${dueDt}</b>
+          <small class="${isLate ? 'late' : ''}">${dueTag}</small>
+        </div>
+      </div>
+      ${flagHtml}
+      <div class="op-foot">
+        <a class="btn sm" href="#projects?id=${p.id}">${icon('eye', 14)}Open Project</a>
+        <button class="btn sm primary" data-action="t-newtask" data-pid="${p.id}">${icon('plus', 13)}Assign Task</button>
+      </div>
+    </div>
+  </article>`;
 }
 
 function renderOverview() {
   const ps = P(), now = new Date();
   const hr = now.getHours(), greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
   const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const monthName = now.toLocaleDateString('en-IN', { month: 'long' });
-  const act = ps.filter(FILTERS.active.fn);
-  const subs = {
-    total: 'Across all stages',
-    active: `${FILTERS.delayed.fn && plural(ps.filter(FILTERS.delayed.fn).length, 'delayed project')}`,
-    design: 'Design and client approval',
-    execution: 'Procurement and site work',
-    completed: monthName,
-    hold: `${ps.filter(p => p.status === 'on_hold').length} on hold, ${ps.filter(p => p.status === 'cancelled').length} cancelled`,
-    new: monthName,
-    handover: 'Due in the next 30 days'
-  };
-  const metrics = METRICS.map(m => `<a class="metric" href="#projects?f=${m.key}" aria-label="${m.label}: ${ps.filter(FILTERS[m.key].fn).length}. Open filtered projects">
-      <span class="m-top"><span>${m.label}</span><span class="m-ic">${icon(m.icon, 15)}</span></span>
-      <span class="m-val">${ps.filter(FILTERS[m.key].fn).length}</span><span class="m-sub">${subs[m.key]}</span></a>`).join('');
+  const act = ps.filter(p => p.status === 'active');
+  const nDelayed = act.filter(p => health(p).key === 'delayed').length;
+  const nRisk = act.filter(p => health(p).key === 'risk').length;
+  const nSite = act.filter(p => p.stage === 'Site Execution').length;
+  const nDesign = act.filter(p => ['Design', 'Client Approval'].includes(p.stage)).length;
+  
+  // Pending client decisions:
+  const sentDesigns = S.designs.filter(d => d.status === 'Sent');
+  const pendingChanges = S.changes.filter(c => c.status === 'Pending');
+  const totalPending = sentDesigns.length + pendingChanges.length;
 
-  // Stage distribution (active projects)
-  const counts = STAGES.map(s => [s, act.filter(p => p.stage === s).length]);
-  const max = Math.max(1, ...counts.map(c => c[1]));
-  const stageRows = counts.map(([s, n]) => `<a class="srow" href="#projects?f=active&stage=${encodeURIComponent(s)}"><span>${s}</span><span class="strack"><i style="width:${n / max * 100}%"></i></span><span class="scount">${n}</span></a>`).join('');
+  // Outstanding payments:
+  const inv = S.invoices.filter(i => act.some(p => p.id === i.projectId));
+  const billed = sum(inv.filter(isIssued), i => i.amount);
+  const got = sum(inv, invPaid);
+  const outstanding = Math.max(0, billed - got);
+  const overdueInvoices = S.invoices.filter(i => invSt(i).k === 'overdue');
 
-  // Monthly trend (last 6 months), computed from project dates
-  const months = [...Array(6)].map((_, i) => new Date(now.getFullYear(), now.getMonth() - 5 + i, 1));
-  const trend = months.map(d => ({
-    label: d.toLocaleDateString('en-IN', { month: 'short' }),
-    n: ps.filter(p => sameMonth(p.createdOn, d)).length,
-    c: ps.filter(p => p.status === 'completed' && sameMonth(p.completedOn, d)).length
-  }));
-  const tmax = Math.max(1, ...trend.flatMap(t => [t.n, t.c]));
-  const bars = trend.map(t => `<div class="tcol"><div class="tbars">
-      <i class="tb n" style="height:${t.n / tmax * 100}%"><em>${t.n}</em></i><i class="tb c" style="height:${t.c / tmax * 100}%"><em>${t.c}</em></i></div><span class="tlabel">${t.label}</span></div>`).join('');
+  // Stage filter for overview project cards
+  const selStage = UI.overviewStage || 'all';
+  let filteredAct = act;
+  if (selStage !== 'all') {
+    filteredAct = act.filter(p => {
+      if (selStage === 'Design') return ['Design', 'Client Approval'].includes(p.stage);
+      return p.stage === selStage;
+    });
+  }
 
-  // Attention + upcoming handovers + activity
+  // Active project cards HTML
+  const projectCardsHtml = filteredAct.length ? filteredAct.map(p => overviewProjectCard(p)).join('') :
+    emptyState('No projects in this stage', 'Select another stage or view all active projects.', '<button class="btn sm" data-action="overview-stage" data-stage="all">View all active</button>');
+
+  // Needs attention
   const att = attention();
-  const attRows = att.slice(0, 7).map(a => `<a class="li" href="${a.href || '#projects?id=' + a.p.id}">${thumb(a.p, 'sm')}
-      <span class="li-main"><b>${esc(a.p.name)}</b><small>${esc(a.msg)}</small></span><span class="li-side">${badge(a.tag, a.cls)}</span></a>`).join('');
-  const upcoming = ps.filter(p => p.status === 'active' && inDays(p) >= 0).sort((a, b) => inDays(a) - inDays(b)).slice(0, 5);
-  const upRows = upcoming.map(p => `<a class="li" href="#projects?id=${p.id}">${thumb(p, 'sm')}
-      <span class="li-main"><b>${esc(p.name)}</b><small>${fmtDate(p.handoverOn, false)}, ${p.progress}% complete</small></span>
-      <span class="li-side">${badge(inDays(p) === 0 ? 'Today' : 'In ' + plural(inDays(p), 'day'), inDays(p) <= 14 ? 'warn' : '', true)}</span></a>`).join('');
-  const actIcon = { approval: 'checkCircle', task: 'hammer', material: 'package', payment: 'rupee', project: 'folder' };
-  const actRows = S.activity.slice(0, 6).map(a => { const p = projectById(a.projectId); return `<div class="act"><span class="act-ic">${icon(actIcon[a.type] || 'activity', 15)}</span>
-      <div><p>${esc(a.text)}</p><small>${p ? esc(p.name) + ', ' : ''}${rel(a.at)}</small></div></div>`; }).join('');
+  const attRows = att.slice(0, 6).map(a => `<a class="att-item" href="${a.href || '#projects?id=' + a.p.id}">
+    <span class="att-badge">${badge(a.tag, a.cls)}</span>
+    <div class="att-main"><b>${esc(a.p.name)}</b><p>${esc(a.msg)}</p></div>
+    <span class="att-arrow">&rarr;</span></a>`).join('');
 
-  return `<div class="page-head"><div><h2>${greet}, ${esc(S.settings.owner)}</h2><p>${dateStr}</p></div>
-      <button class="btn primary" data-action="new-project">${icon('plus', 16)}New project</button></div>
-    <section class="metrics" aria-label="Key metrics">${metrics}</section>
-    ${moneyStrip()}
-    <div class="row r-5-7">
-      <section class="card">${cardHead('Project stages', `<span>${plural(act.length, 'active project')}</span>`)}<div class="card-b">${stageRows}</div></section>
-      <section class="card">${cardHead('Monthly trend', `<div class="legend"><span><i style="background:var(--accent)"></i>New</span><span><i style="background:var(--sand)"></i>Completed</span></div>`)}<div class="card-b"><div class="trend">${bars}</div></div></section>
+  // Activity stream
+  const actIcon = { approval: 'checkCircle', task: 'hammer', material: 'package', payment: 'rupee', project: 'folder' };
+  const actRows = S.activity.slice(0, 6).map(a => {
+    const p = projectById(a.projectId);
+    return `<div class="act"><span class="act-ic">${icon(actIcon[a.type] || 'activity', 15)}</span>
+      <div><p>${esc(a.text)}</p><small>${p ? esc(p.name) + ' · ' : ''}${rel(a.at)}</small></div></div>`;
+  }).join('');
+
+  // Stage counts for quick filter pills
+  const stgCnt = {
+    all: act.length,
+    Design: act.filter(p => ['Design', 'Client Approval'].includes(p.stage)).length,
+    Procurement: act.filter(p => p.stage === 'Procurement').length,
+    'Site Execution': act.filter(p => p.stage === 'Site Execution').length,
+    Handover: act.filter(p => p.stage === 'Handover').length
+  };
+
+  return `<div class="overview-hero">
+      <div>
+        <h2>${greet}, ${esc(S.settings.owner)}</h2>
+        <p>${esc(S.settings.company)} · ${esc(S.settings.city)} studio · ${dateStr}</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn" data-action="new-project">${icon('plus', 15)}New Project</button>
+        <button class="btn primary" data-action="t-newtask">${icon('hammer', 15)}Assign Task to PM</button>
+      </div>
     </div>
-    <div class="row r-7-5">
-      <section class="card">${cardHead('Needs attention', `<span>${att.length ? plural(att.length, 'item') : ''}</span>`)}<div class="card-b">${attRows || emptyState('Nothing needs attention', 'All active projects are on track.')}</div></section>
-      <section class="card">${cardHead('Upcoming handovers', `<a href="#timeline">Timeline</a>`)}<div class="card-b">${upRows || emptyState('No upcoming handovers', 'Create a project to start tracking handover dates.', '<button class="btn sm" data-action="new-project">New project</button>')}</div></section>
+
+    <!-- 1. Focused Business Summary (Calculated from real records) -->
+    <section class="biz-summary" aria-label="Business vitals">
+      <a class="biz-card" href="#projects?f=active" aria-label="Active projects: ${act.length}">
+        <div class="biz-top"><span>Active Projects</span><span class="biz-ic">${icon('folder', 16)}</span></div>
+        <div class="biz-val">${act.length}</div>
+        <div class="biz-sub">${nSite} in execution · ${nDesign} in design</div>
+      </a>
+      <a class="biz-card" href="#projects?f=delayed" aria-label="Delayed and at risk: ${nDelayed + nRisk}">
+        <div class="biz-top"><span>Delayed & At Risk</span><span class="biz-ic ${nDelayed + nRisk ? 'bad' : ''}">${icon('alert', 16)}</span></div>
+        <div class="biz-val" style="${nDelayed + nRisk ? 'color:var(--bad)' : ''}">${nDelayed + nRisk}</div>
+        <div class="biz-sub">${nDelayed} past handover · ${nRisk} at risk</div>
+      </a>
+      <a class="biz-card" href="#design?status=Sent" aria-label="Pending approvals: ${totalPending}">
+        <div class="biz-top"><span>Pending Approvals</span><span class="biz-ic ${totalPending ? 'warn' : ''}">${icon('pen', 16)}</span></div>
+        <div class="biz-val" style="${totalPending ? 'color:var(--warn)' : ''}">${totalPending}</div>
+        <div class="biz-sub">${sentDesigns.length} design${sentDesigns.length === 1 ? '' : 's'} · ${pendingChanges.length} change order${pendingChanges.length === 1 ? '' : 's'}</div>
+      </a>
+      <a class="biz-card" href="#finance?tab=invoices&st=overdue" aria-label="Outstanding payments: ${lk(outstanding)}">
+        <div class="biz-top"><span>Outstanding Payments</span><span class="biz-ic ${overdueInvoices.length ? 'warn' : ''}">${icon('rupee', 16)}</span></div>
+        <div class="biz-val">${lk(outstanding)}</div>
+        <div class="biz-sub">${overdueInvoices.length ? overdueInvoices.length + ' invoices overdue' : 'All invoices current'} · ${lk(got)} collected</div>
+      </a>
+    </section>
+
+    <!-- 2. Visual Project Cards (The Hero Focus) -->
+    <section class="overview-projects-sec" aria-label="Active Projects">
+      <div class="op-sec-head">
+        <div class="op-sec-title">
+          <span>Active Projects</span>
+          <span class="op-count">${act.length}</span>
+        </div>
+        <div class="op-sec-tools">
+          <div class="op-stage-filters" role="tablist" aria-label="Filter active projects by stage">
+            <button type="button" class="stage-pill ${selStage === 'all' ? 'active' : ''}" data-action="overview-stage" data-stage="all">All (${stgCnt.all})</button>
+            <button type="button" class="stage-pill ${selStage === 'Design' ? 'active' : ''}" data-action="overview-stage" data-stage="Design">Design (${stgCnt.Design})</button>
+            <button type="button" class="stage-pill ${selStage === 'Procurement' ? 'active' : ''}" data-action="overview-stage" data-stage="Procurement">Procurement (${stgCnt.Procurement})</button>
+            <button type="button" class="stage-pill ${selStage === 'Site Execution' ? 'active' : ''}" data-action="overview-stage" data-stage="Site Execution">Site Execution (${stgCnt['Site Execution']})</button>
+            <button type="button" class="stage-pill ${selStage === 'Handover' ? 'active' : ''}" data-action="overview-stage" data-stage="Handover">Handover (${stgCnt.Handover})</button>
+          </div>
+          <a class="btn sm" href="#projects">All in workspace &rarr;</a>
+        </div>
+      </div>
+      <div class="op-grid">
+        ${projectCardsHtml}
+      </div>
+    </section>
+
+    <!-- 3. Needs Attention & Studio Activity -->
+    <div class="overview-lower">
+      <section class="card" aria-label="Needs attention">
+        ${cardHead('Needs attention', `<span class="badge ${att.length ? 'warn' : 'ok'} plain">${att.length ? plural(att.length, 'action item') : 'All on track'}</span>`)}
+        <div class="card-b">
+          ${attRows ? `<div class="att-list">${attRows}</div>` : emptyState('No items need attention', 'All projects, site tasks, and payments are currently on schedule.')}
+        </div>
+      </section>
+      <section class="card" aria-label="Recent activity">
+        ${cardHead('Recent Studio Activity', `<a href="#notifications">All activity</a>`)}
+        <div class="card-b">
+          ${actRows || emptyState('No recent activity', 'Recent updates to projects and tasks will appear here.')}
+        </div>
+      </section>
     </div>
-    <section class="card">${cardHead('Recent activity')}<div class="card-b act-grid">${actRows}</div></section>
-    <p class="note">Demo data: figures are calculated from sample data stored in this browser. No emails or payments are processed.</p>`;
+
+    <p class="note">Interior Project Control System · All project records and sync state live natively in this browser session.</p>`;
 }
 
 
@@ -1266,7 +1563,7 @@ function projectDetail(id) {
   const rooms = p.rooms.map(r => { const d = S.designs.find(x => x.projectId === p.id && x.room === r); const cls = !d ? '' : { Approved: 'ok', Sent: 'info', Revision: 'warn', Draft: '' }[d.status];
     return `<div class="li"><span class="li-main"><b>${esc(r)}</b><small>${d ? `Design v${d.version}` : 'No design yet'}</small></span><span class="li-side">${d ? badge(d.status, cls) : `<a class="btn sm" href="#design?p=${p.id}">Add design</a>`}</span></div>`; }).join('');
   return `<div class="page-head"><div><a class="back" href="#projects">&larr; All projects</a><h2>${esc(p.name)}</h2><p><a class="lnk" href="#clients?q=${encodeURIComponent(clientName(p.clientId))}">${esc(clientName(p.clientId))}</a> · ${esc(p.type)} · ${esc(p.location)}${p.archived ? ' · Archived' : ''}</p></div>
-    <div class="head-actions"><button class="btn" data-action="p-edit" data-id="${p.id}">${icon('edit', 15)}Edit</button><button class="btn" data-action="p-archive" data-id="${p.id}">${p.archived ? 'Restore' : 'Archive'}</button>${p.custom ? `<button class="btn danger" data-action="p-del" data-id="${p.id}">${icon('trash', 15)}Delete</button>` : ''}</div></div>
+    <div class="head-actions"><button class="btn primary" data-action="t-newtask" data-pid="${p.id}">${icon('hammer', 15)}Assign Task</button><button class="btn" data-action="p-edit" data-id="${p.id}">${icon('edit', 15)}Edit</button><button class="btn" data-action="p-archive" data-id="${p.id}">${p.archived ? 'Restore' : 'Archive'}</button>${p.custom ? `<button class="btn danger" data-action="p-del" data-id="${p.id}">${icon('trash', 15)}Delete</button>` : ''}</div></div>
   <section class="card"><div class="card-b"><div class="steps">${STAGES.map((n, i) => `<button class="step ${p.status === 'completed' || i < s ? 'done' : i === s ? 'cur' : ''}" data-action="set-stage" data-id="${p.id}" data-v="${n}" ${p.status !== 'active' ? 'disabled' : ''}><i>${i + 1}</i><span>${n}</span></button>`).join('')}</div>
     <div class="det-bar">${badge(STATUS_LABEL[p.status], p.status === 'active' ? 'ok' : p.status === 'completed' ? 'info' : 'warn')} ${p.status === 'active' ? badge(h.label, h.cls) : ''}<span class="spacer"></span>${st.map(a => `<button class="btn sm ${a[0] === 'p-cancel' ? '' : ''}" data-action="${a[0]}" data-id="${p.id}">${icon(a[2], 14)}${a[1]}</button>`).join('')}</div></div></section>
   <section class="metrics auto" style="margin-top:16px">
@@ -1875,11 +2172,14 @@ function taskCard(t, late) {
   const p = projectById(t.projectId), n = daysUntil(t.due), done = t.status === 'Done', stCls = { Done: 'ok', 'In progress': 'info', 'To do': '' }[t.status];
   const media = done ? roomImg(t.room, t.id, 900, `${t.room}, ${p.name}`) : siteImg(t.id, 900, `Site work, ${t.room}`);
   const dueLbl = done ? `Done · due ${fmtDate(t.due, false)}` : n < 0 ? `${plural(-n, 'day')} late` : n === 0 ? 'Due today' : `Due ${fmtDate(t.due, false)}`;
+  const asgOpts = S.team.map(m => [m.id, `${m.name}${m.role === 'Project Manager' ? ' (PM)' : ''}`]);
   return `<article class="vcard ${late ? 'alert' : ''} ${done ? 'muted-card' : ''}"><div class="vmedia">${media}<div class="vtop">${badge(t.status, stCls)}${late ? `<span class="vchip" style="color:var(--bad)">${icon('alert', 13)}${plural(-n, 'day')} late</span>` : badge(t.priority + ' priority', PRI_CLS[t.priority], true)}</div>
     <div class="vcap"><div><b>${esc(t.room)}</b><small>${esc(p.name)}</small></div><span class="vpct">${t.progress}%</span></div></div>
-    <div class="vbody"><div class="vtitle" style="font-size:17px">${esc(t.title)}</div><div class="vpbar">${progress(t.progress)}</div>
+    <div class="vbody"><div class="vtitle" style="font-size:17px">${esc(t.title)}</div>
+      ${t.desc ? `<p style="font-size:12.5px;color:var(--ink-2);margin:4px 0 8px;line-height:1.4">${esc(t.desc)}</p>` : ''}
+      <div class="vpbar">${progress(t.progress)}</div>
       <div class="vmeta"><span class="${late ? 'late' : ''}">${icon('calendar', 13)}${dueLbl}</span><span>${plink(t.projectId)}</span></div>
-      <div class="vsels">${lbl('Assigned worker', sselect('task-asg', t.id, t.assignee, memberOpts()))}${lbl('Status', sselect('task', t.id, t.status, TASK_ST))}</div></div>
+      <div class="vsels">${lbl('Assigned PM / Lead', sselect('task-asg', t.id, t.assignee, asgOpts))}${lbl('Status', sselect('task', t.id, t.status, TASK_ST))}</div></div>
     <div class="vacts">${done ? vbtn('tk-set', t.id, 'Reopen', 'refresh', '', 'data-v="In progress"') : vbtn('tk-update', t.id, 'Update progress', 'edit', 'primary') + vbtn('tk-set', t.id, 'Mark done', 'check', '', 'data-v="Done"')}${!done ? vbtn('tk-resched', t.id, 'Reschedule', 'calendar') : ''}${t.custom ? vbtn('tk-del', t.id, 'Delete', 'trash', 'danger') : ''}</div></article>`;
 }
 function siteBody() {
@@ -1929,9 +2229,66 @@ function renderSite() {
 CHG.task = (id, v) => { const t = S.tasks.find(x => x.id === id); t.status = v; t.progress = v === 'Done' ? 100 : v === 'To do' ? 0 : Math.max(40, t.progress < 100 ? t.progress : 50);
   const p = projectById(t.projectId), all = S.tasks.filter(x => x.projectId === p.id); if (p.stage === 'Site Execution') p.progress = Math.max(p.progress, Math.min(98, Math.round(60 + 35 * all.filter(x => x.status === 'Done').length / all.length)));
   log('task', `${t.title}: ${v}`, p.id); commit(`Task marked ${v.toLowerCase()}`); };
-ACT['t-newtask'] = () => formModal({ title: 'New site task', submit: 'Create task', fields: [{ k: 'p', label: 'Project', type: 'select', req: 1, val: UI.site.p, opts: [['', 'Select a project'], ...openProjOpts()] }, { k: 'title', label: 'Task', req: 1, ph: 'e.g. Tile laying, master bathroom' },
-  { k: 'asg', label: 'Assign to', type: 'select', half: 1, opts: memberOpts() }, { k: 'due', label: 'Due date', type: 'date', req: 1, half: 1, val: dayOff(7) }, { k: 'pri', label: 'Priority', type: 'select', val: 'Medium', opts: ['High', 'Medium', 'Low'] }],
-  onSubmit: v => { const p = projectById(v.p); S.tasks.push({ id: nid('TK-', S.tasks), projectId: v.p, title: v.title, room: p.rooms[0] || '-', assignee: v.asg, priority: v.pri, status: 'To do', progress: 0, due: v.due, custom: true }); log('task', `Task created: ${v.title}`, v.p); commit('Task created'); } });
+function openAssignTaskModal(defaultPid) {
+  const openProjects = live().filter(p => ['active', 'on_hold'].includes(p.status));
+  const pid = defaultPid || (UI.site && UI.site.p) || (openProjects[0] ? openProjects[0].id : '');
+  const proj = projectById(pid) || openProjects[0] || S.projects[0];
+
+  const pmTeam = S.team.filter(t => t.role === 'Project Manager' || t.lead);
+  const otherTeam = S.team.filter(t => !pmTeam.some(pm => pm.id === t.id));
+  const teamOpts = [
+    ...pmTeam.map(t => [t.id, `${t.name} (${t.role})`]),
+    ...otherTeam.map(t => [t.id, `${t.name} (${t.role})`])
+  ];
+
+  const defaultAsg = (proj && proj.pmId) || (pmTeam[0] ? pmTeam[0].id : S.team[0].id);
+
+  formModal({
+    title: 'Assign Task to Project Manager',
+    intro: 'Create and assign an execution task to a Project Manager. Tasks sync in real-time with the Project Manager dashboard and site logs.',
+    submit: 'Assign Task',
+    fields: [
+      { k: 'p', label: 'Project', type: 'select', req: 1, val: proj ? proj.id : '', opts: [['', 'Select a project'], ...openProjects.map(p => [p.id, `${p.name} (${p.stage})`])] },
+      { k: 'title', label: 'Task Title', req: 1, ph: 'e.g. False ceiling framework & laser leveling' },
+      { k: 'desc', label: 'Task Instructions / Scope', type: 'textarea', ph: 'Describe specific deliverables, drawings to reference, materials, or snag tolerances...' },
+      { k: 'asg', label: 'Assign to PM / Lead', type: 'select', req: 1, half: 1, val: defaultAsg, opts: teamOpts },
+      { k: 'pri', label: 'Priority', type: 'select', half: 1, val: 'Medium', opts: ['High', 'Medium', 'Low'] },
+      { k: 'due', label: 'Due Date', type: 'date', req: 1, half: 1, val: dayOff(7) },
+      { k: 'room', label: 'Room / Area', type: 'text', half: 1, ph: 'e.g. Master Bedroom, Living Room', val: (proj && proj.rooms && proj.rooms[0]) || 'General' }
+    ],
+    onSubmit: v => {
+      const p = projectById(v.p) || S.projects[0];
+      const assignee = S.team.find(t => t.id === v.asg) || { name: 'Project Manager' };
+      const newTask = {
+        id: nid('TK-', S.tasks),
+        projectId: v.p,
+        title: v.title,
+        desc: v.desc ? v.desc.trim() : '',
+        room: v.room ? v.room.trim() : (p.rooms && p.rooms[0]) || 'General',
+        assignee: v.asg,
+        priority: v.pri,
+        status: 'To do',
+        progress: 0,
+        due: v.due,
+        custom: true
+      };
+      S.tasks.push(newTask);
+      log('task', `Task assigned to ${assignee.name}: ${v.title}`, v.p);
+      notify('task', `Task assigned to ${assignee.name}: ${v.title} (${p.name})`, v.p, '#site?tab=tasks&p=' + v.p);
+      commit(`Task assigned to ${assignee.name}`);
+    }
+  });
+}
+ACT['t-newtask'] = el => {
+  const pid = (el && (el.dataset.pid || el.dataset.id)) || '';
+  openAssignTaskModal(pid);
+};
+ACT['overview-stage'] = el => {
+  const s = (el && el.dataset.stage) || 'all';
+  if (UI.overview) UI.overview.stage = s;
+  UI.overviewStage = s;
+  render(true);
+};
 ACT['tk-del'] = el => {
   const t = S.tasks.find(x => x.id === el.dataset.id);
   if (!t || !t.custom) { toast('Original sample tasks cannot be deleted.', 'error'); return; }
@@ -2430,11 +2787,14 @@ function hideResults() { $('#results').classList.remove('show'); }
 function runSearch(q) {
   const box = $('#results'); q = q.trim().toLowerCase();
   if (q.length < 2) { hideResults(); return; }
-  const pr = P().filter(p => `${p.name} ${p.location} ${clientName(p.clientId)}`.toLowerCase().includes(q)).slice(0, 5), cl = S.clients.filter(c => `${c.name} ${c.contact}`.toLowerCase().includes(q)).slice(0, 3);
+  const pr = P().filter(p => `${p.name} ${p.location} ${clientName(p.clientId)}`.toLowerCase().includes(q)).slice(0, 5);
+  const cl = S.clients.filter(c => `${c.name} ${c.contact}`.toLowerCase().includes(q)).slice(0, 3);
+  const tk = (S.tasks || []).filter(t => `${t.title} ${t.room} ${t.desc || ''}`.toLowerCase().includes(q)).slice(0, 3);
   let html = '';
   if (pr.length) html += `<div class="res-title">Projects</div>` + pr.map(p => `<a class="res-item" href="#projects?id=${p.id}">${thumb(p, 'sm')}<span><b>${esc(p.name)}</b><small>${esc(clientName(p.clientId))}</small></span></a>`).join('');
   if (cl.length) html += `<div class="res-title">Clients</div>` + cl.map(c => `<a class="res-item" href="#clients?q=${encodeURIComponent(c.name)}"><span class="m-ic">${icon('user', 15)}</span><span><b>${esc(c.name)}</b><small>${esc(c.contact || '')}</small></span></a>`).join('');
-  box.innerHTML = html || `<div class="res-empty">No projects or clients match "${esc(q)}".</div>`; box.classList.add('show');
+  if (tk.length) html += `<div class="res-title">Tasks</div>` + tk.map(t => `<a class="res-item" href="#site?tab=tasks&p=${t.projectId}"><span class="m-ic">${icon('hammer', 15)}</span><span><b>${esc(t.title)}</b><small>${esc(pname(t.projectId))} · ${esc(t.room)}</small></span></a>`).join('');
+  box.innerHTML = html || `<div class="res-empty">No projects, clients or tasks match "${esc(q)}".</div>`; box.classList.add('show');
 }
 
 /* ============================== EVENTS ============================== */
@@ -2501,6 +2861,7 @@ function reloadShared() {
   staleShared = false; S = load(); buildNav(); updateBadges(); applySettings(); render(true);
 }
 let syncT; window.addEventListener('storage', e => { if (e.key === KEY || e.key === null) { clearTimeout(syncT); syncT = setTimeout(reloadShared, 60); } });
+if (syncChan) syncChan.addEventListener('message', e => { if (e && e.data && e.data.key === KEY) { clearTimeout(syncT); syncT = setTimeout(reloadShared, 60); } });
 
 /* ============================== INIT ============================== */
 $('#sbToggle').innerHTML = icon('panel', 20); $('#searchIc').innerHTML = icon('search', 16); $('#searchBtn').innerHTML = icon('search', 20); $('#plusIc').innerHTML = icon('plus', 17);
